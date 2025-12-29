@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- Moon indicator (front/visible variant - solid crescent) -->
+
+  <!-- Outer circle (full moon outline) -->
+  <circle cx="50" cy="50" r="16"
+          fill="#e0e0ff"
+          stroke="#b0b0d0"
+          stroke-width="2"
+          opacity="0.9"/>
+
+  <!-- Crescent shape (created using path for visual interest) -->
+  <!-- This creates a subtle 3D effect -->
+  <circle cx="54" cy="47" r="13"
+          fill="#30304080"
+          opacity="0.3"/>
+
+  <!-- Crater details (small circles) -->
+  <circle cx="45" cy="47" r="2.5"
+          fill="#c0c0d0"
+          opacity="0.5"/>
+
+  <circle cx="53" cy="53" r="1.8"
+          fill="#c0c0d0"
+          opacity="0.5"/>
+
+  <circle cx="48" cy="55" r="2"
+          fill="#c0c0d0"
+          opacity="0.5"/>
+
+  <!-- Highlight (makes it look 3D) -->
+  <circle cx="46" cy="45" r="4"
+          fill="#ffffff"
+          opacity="0.4"/>
+
+  <!-- Outer glow ring -->
+  <circle cx="50" cy="50" r="18"
+          fill="none"
+          stroke="#d0d0ff"
+          stroke-width="1"
+          opacity="0.3"/>
+</svg>

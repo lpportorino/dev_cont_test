@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- Sun indicator (back/behind horizon variant - dotted/dashed lines) -->
+
+  <!-- Central circle (sun body) - dashed stroke -->
+  <circle cx="50" cy="50" r="12"
+          fill="#ffdd44"
+          stroke="#ff9900"
+          stroke-width="2"
+          stroke-dasharray="3,2"
+          opacity="0.7"/>
+
+  <!-- Sun rays (8 rays at cardinal and inter-cardinal directions) - dashed -->
+  <!-- North -->
+  <line x1="50" y1="22" x2="50" y2="34"
+        stroke="#ff9900"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-dasharray="4,3"
+        opacity="0.6"/>
+
+  <!-- Northeast -->
+  <line x1="66" y1="34" x2="58.5" y2="41.5"
+        stroke="#ff9900"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-dasharray="4,3"
+        opacity="0.6"/>
+
+  <!-- East -->
+  <line x1="78" y1="50" x2="66" y2="50"
+        stroke="#ff9900"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-dasharray="4,3"
+        opacity="0.6"/>
+
+  <!-- Southeast -->
+  <line x1="66" y1="66" x2="58.5" y2="58.5"
+        stroke="#ff9900"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-dasharray="4,3"
+        opacity="0.6"/>
+
+  <!-- South -->
+  <line x1="50" y1="78" x2="50" y2="66"
+        stroke="#ff9900"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-dasharray="4,3"
+        opacity="0.6"/>
+
+  <!-- Southwest -->
+  <line x1="34" y1="66" x2="41.5" y2="58.5"
+        stroke="#ff9900"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-dasharray="4,3"
+        opacity="0.6"/>
+
+  <!-- West -->
+  <line x1="22" y1="50" x2="34" y2="50"
+        stroke="#ff9900"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-dasharray="4,3"
+        opacity="0.6"/>
+
+  <!-- Northwest -->
+  <line x1="34" y1="34" x2="41.5" y2="41.5"
+        stroke="#ff9900"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-dasharray="4,3"
+        opacity="0.6"/>
+
+  <!-- Center highlight dot - slightly faded -->
+  <circle cx="50" cy="50" r="3"
+          fill="#ffffff"
+          opacity="0.4"/>
+</svg>

@@ -1,0 +1,28 @@
+{
+  "name": "jettison-proto-snapshot",
+  "version": "1.0.0",
+  "description": "Capture and sanitize JonGUIState protobuf snapshots from production",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "snapshot": "ts-node src/capture.ts",
+    "json2proto": "ts-node src/json2proto.ts",
+    "generate-animation": "ts-node src/generate_animation.ts",
+    "generate-variants": "ts-node generateVariants.ts",
+    "clean": "rm -rf dist"
+  },
+  "keywords": ["protobuf", "snapshot", "jettison"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/ws": "^8.5.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "ws": "^8.16.0",
+    "@bufbuild/protobuf": "^2.3.0",
+    "long": "^5.2.3"
+  }
+}

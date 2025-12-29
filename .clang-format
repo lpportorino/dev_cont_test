@@ -1,0 +1,58 @@
+---
+# Clang-Format configuration for GNU coding standard
+BasedOnStyle: GNU
+
+# Indentation
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
+ContinuationIndentWidth: 2
+
+# Line length
+ColumnLimit: 80
+
+# Braces
+BreakBeforeBraces: GNU
+BraceWrapping:
+  AfterFunction: true
+  AfterControlStatement: MultiLine
+  AfterStruct: true
+  AfterEnum: true
+
+# Functions
+AllowShortFunctionsOnASingleLine: None
+AlwaysBreakAfterReturnType: AllDefinitions
+BinPackParameters: false
+
+# Control statements
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+
+# Alignment
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: false
+AlignEscapedNewlines: Left
+AlignOperands: true
+AlignTrailingComments: true
+
+# Spacing
+SpaceBeforeParens: ControlStatements
+SpaceAfterCStyleCast: false
+SpaceBeforeAssignmentOperators: true
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+
+# Pointers and references
+PointerAlignment: Right
+DerivePointerAlignment: false
+
+# Include sorting
+SortIncludes: true
+IncludeBlocks: Regroup
+
+# Comments
+ReflowComments: true
+
+# Other
+MaxEmptyLinesToKeep: 2
+KeepEmptyLinesAtTheStartOfBlocks: false

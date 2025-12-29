@@ -1,0 +1,178 @@
+/**
+ * @file variant_info.c
+ * @brief Variant information widget implementation
+ */
+
+#include "widgets/variant_info.h"
+
+#include "core/framebuffer.h"
+#include "rendering/text.h"
+#include "utils/logging.h"
+
+#include <stdio.h>
+#include <string.h>
+
+// Variant info layout constants
+#define VARIANT_INFO_LINE_SPACING 4      // Vertical spacing between lines
+#define VARIANT_INFO_OUTLINE_THICKNESS 1 // Outline thickness for text
+
+// Determine variant name from compile-time defines
+static const char *
+get_variant_name(void)
+{
+#if defined(OSD_MODE_LIVE) && defined(OSD_STREAM_DAY)
+  return "live_day";
+#elif defined(OSD_MODE_LIVE) && defined(OSD_STREAM_THERMAL)
+  return "live_thermal";
+#elif defined(OSD_MODE_RECORDING) && defined(OSD_STREAM_DAY)
+  return "recording_day";
+#elif defined(OSD_MODE_RECORDING) && defined(OSD_STREAM_THERMAL)
+  return "recording_thermal";
+#else
+  return "unknown";
+#endif
+}
+
+// ════════════════════════════════════════════════════════════
+// WIDGET LIFECYCLE FUNCTIONS
+// ════════════════════════════════════════════════════════════
+//
+// The variant info widget follows the standard widget pattern with
+// init/render/cleanup functions for API consistency, but unlike other
+// widgets (navball, font), it requires no resource allocation:
+//
+//   - No textures to load (pure text rendering)
+//   - No lookup tables to precompute
+//   - No file I/O required
+//   - All data comes from compile-time defines or runtime config
+//
+// Therefore, init() and cleanup() are no-ops that simply log for
+// debugging purposes. This pattern maintains a consistent widget API
+// while avoiding unnecessary complexity.
+//
+// ════════════════════════════════════════════════════════════
+
+/**
+ * Initialize variant info widget
+ *
+ * This is a no-op because the variant info widget requires no resource
+ * allocation. All rendering is done with existing font resources and
+ * compile-time/runtime configuration data.
+ *
+ * @param ctx OSD context (unused)
+ */
+void
+variant_info_init(osd_context_t *ctx)
+{
+  (void)ctx;
+  LOG_INFO("Variant info widget initialized");
+}
+
+bool
+variant_info_render(osd_context_t *ctx, const osd_state_t *state)
+{
+  (void)state; // Unused
+
+  if (!ctx->config.variant_info.enabled)
+    {
+      return false;
+    }
+
+  framebuffer_t fb;
+  framebuffer_init(&fb, ctx->framebuffer, ctx->width, ctx->height);
+
+  int x                 = ctx->config.variant_info.pos_x;
+  int y                 = ctx->config.variant_info.pos_y;
+  const uint32_t color  = ctx->config.variant_info.color;
+  const int font_size   = ctx->config.variant_info.font_size;
+  const int line_height = font_size + VARIANT_INFO_LINE_SPACING;
+
+  // Buffer for text rendering
+  char buffer[256];
+
+  // Render variant name header
+  const char *variant_name = get_variant_name();
+  snprintf(buffer, sizeof(buffer), "Variant: %s", variant_name);
+  text_render_with_outline(&fb, &ctx->font_variant_info, buffer, x, y, color,
+                           0xFF000000, // Black outline
+                           font_size,  //
+                           VARIANT_INFO_OUTLINE_THICKNESS);
+
+  y += line_height;
+
+  // Separator line
+  y += VARIANT_INFO_LINE_SPACING;
+
+  // Render config values
+  // Create items array and fill in values
+  struct
+  {
+    const char *key;
+    char value[128];
+  } items[8];
+
+  snprintf(items[0].value, sizeof(items[0].value), "%ux%u", ctx->width,
+           ctx->height);
+  items[0].key = "Resolution";
+
+#ifdef OSD_MODE_LIVE
+  snprintf(items[1].value, sizeof(items[1].value), "Live");
+#else
+  snprintf(items[1].value, sizeof(items[1].value), "Recording");
+#endif
+  items[1].key = "Mode";
+
+  snprintf(items[2].value, sizeof(items[2].value), "%s",
+           ctx->config.crosshair.enabled ? "Enabled" : "Disabled");
+  items[2].key = "Crosshair";
+
+  snprintf(items[3].value, sizeof(items[3].value), "%s",
+           ctx->config.timestamp.enabled ? "Enabled" : "Disabled");
+  items[3].key = "Timestamp";
+
+  snprintf(items[4].value, sizeof(items[4].value), "%s",
+           ctx->config.speed_indicators.enabled ? "Enabled" : "Disabled");
+  items[4].key = "Speed Indicators";
+
+  snprintf(items[5].value, sizeof(items[5].value), "%s",
+           ctx->config.navball.enabled ? "Enabled" : "Disabled");
+  items[5].key = "Navball";
+
+  snprintf(items[6].value, sizeof(items[6].value), "%d, %d",
+           ctx->config.navball.position_x, ctx->config.navball.position_y);
+  items[6].key = "Navball Pos";
+
+  snprintf(items[7].value, sizeof(items[7].value), "%dpx",
+           ctx->config.navball.size);
+  items[7].key = "Navball Size";
+
+  // Render each config item
+  for (size_t i = 0; i < sizeof(items) / sizeof(items[0]); i++)
+    {
+      snprintf(buffer, sizeof(buffer), "%s: %s", items[i].key, items[i].value);
+      text_render_with_outline(&fb, &ctx->font_variant_info, buffer, x, y,
+                               color,
+                               0xFF000000, // Black outline
+                               font_size,  //
+                               VARIANT_INFO_OUTLINE_THICKNESS);
+
+      y += line_height;
+    }
+
+  return true;
+}
+
+/**
+ * Clean up variant info widget
+ *
+ * This is a no-op because the variant info widget allocates no resources.
+ * Exists for API consistency with other widgets.
+ *
+ * @param ctx OSD context (unused)
+ */
+void
+variant_info_cleanup(osd_context_t *ctx)
+{
+  (void)ctx;
+  LOG_INFO("Variant info widget cleaned up");
+}

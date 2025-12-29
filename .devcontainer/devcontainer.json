@@ -1,0 +1,21 @@
+{
+  "name": "Jettison WASM OSD",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "workspaceFolder": "/workspaces/dev_cont_test",
+  "containerEnv": {
+    "WASI_SDK_PATH": "/opt/wasi-sdk",
+    "WASI_SDK_PREFIX": "/opt/wasi-sdk"
+  },
+  "runArgs": [
+    "--add-host=host.docker.internal:host-gateway"
+  ],
+  "mounts": [
+    "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached"
+  ],
+  "postCreateCommand": "bash .devcontainer/scripts/post-create.sh",
+  "remoteUser": "vscode",
+  "overrideCommand": true
+}

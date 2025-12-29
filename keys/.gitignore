@@ -1,0 +1,9 @@
+# Protect production keys - NEVER commit these!
+production-*.pem
+production-*.key
+*.p12
+*.pfx
+*.jks
+
+# Allow example keys (for demonstration only)
+!example-*.pem

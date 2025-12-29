@@ -1,0 +1,12 @@
+{
+  "name": "@lpportorico/jettison-proto-typescript",
+  "version": "1.0.0",
+  "description": "Auto-generated TypeScript bindings using ts-proto.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

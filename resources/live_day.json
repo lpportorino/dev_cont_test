@@ -1,0 +1,75 @@
+{
+  "version": "1.0.0",
+  "resolution": {"width": 1920, "height": 1080},
+  "crosshair": {
+    "enabled": true,
+    "orientation": "vertical",
+    "center_dot": {
+      "enabled": true,
+      "radius": 3,
+      "color": "#FFFF0000",
+      "thickness": 1
+    },
+    "cross": {
+      "enabled": true,
+      "length": 35,
+      "gap": 10,
+      "thickness": 4,
+      "color": "#FFFF0000"
+    },
+    "circle": {
+      "enabled": true,
+      "radius": 15,
+      "thickness": 2,
+      "color": "#FFFF0000"
+    }
+  },
+  "timestamp": {
+    "enabled": false,
+    "position_x": 10,
+    "position_y": 10,
+    "color": "#FF00FFFF",
+    "font_size": 32,
+    "font": "liberation_sans_bold"
+  },
+  "speed_indicators": {
+    "enabled": true,
+    "color": "#FF00FF00",
+    "font_size": 28,
+    "max_speed_azimuth": 35.0,
+    "max_speed_elevation": 35.0,
+    "font": "liberation_sans_bold"
+  },
+  "variant_info": {
+    "enabled": true,
+    "position_x": 10,
+    "position_y": 50,
+    "color": "#FFFFFF00",
+    "font_size": 21,
+    "font": "liberation_sans_bold"
+  },
+  "navball": {
+    "enabled": true,
+    "position_x": 810,
+    "position_y": 730,
+    "size": 300,
+    "skin": "5thHorseman_brown",
+    "show_level_marker": false,
+    "center_indicator": {
+      "enabled": true,
+      "indicator": "circle",
+      "scale": 0.2
+    }
+  },
+  "celestial_indicators": {
+    "enabled": true,
+    "show_sun": true,
+    "show_moon": true,
+    "scale": 1.0,
+    "visibility_threshold": -5.0,
+    "sun_front_svg": "resources/navball_indicators/sun_front.svg",
+    "sun_back_svg": "resources/navball_indicators/sun_back.svg",
+    "moon_front_svg": "resources/navball_indicators/moon_front.svg",
+    "moon_back_svg": "resources/navball_indicators/moon_back.svg"
+  }
+}

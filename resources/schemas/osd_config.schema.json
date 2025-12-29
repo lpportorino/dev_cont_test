@@ -1,0 +1,240 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://jettison.com/schemas/osd_config.json",
+  "title": "OSD Configuration Schema",
+  "description": "JSON Schema for Jettison OSD configuration (Draft-07). Note: Some runtime values like crosshair offset (offset_x/offset_y) come from protobuf state, not this config - see rec_osd.day_crosshair_offset_* and heat_crosshair_offset_* fields.",
+  "type": "object",
+  "required": ["crosshair", "timestamp", "speed_indicators", "variant_info", "navball", "celestial_indicators"],
+  "properties": {
+    "crosshair": {
+      "type": "object",
+      "title": "Crosshair",
+      "x-ui-level": "top",
+      "required": ["enabled", "center_dot", "cross", "circle"],
+      "properties": {
+        "enabled": { "type": "boolean", "title": "Enabled" },
+        "orientation": {
+          "type": "string",
+          "title": "Orientation",
+          "enum": ["vertical", "diagonal"],
+          "default": "vertical"
+        },
+        "center_dot": {
+          "type": "object",
+          "title": "Center Dot",
+          "x-ui-level": "accordion",
+          "required": ["enabled", "radius", "color", "thickness"],
+          "properties": {
+            "enabled": { "type": "boolean", "title": "Enabled" },
+            "radius": { "type": "number", "title": "Radius", "minimum": 0, "maximum": 50 },
+            "color": { "$ref": "#/definitions/argb_color", "title": "Color" },
+            "thickness": { "type": "number", "title": "Thickness", "minimum": 0.5, "maximum": 10 }
+          }
+        },
+        "cross": {
+          "type": "object",
+          "title": "Cross",
+          "x-ui-level": "accordion",
+          "required": ["enabled", "length", "gap", "thickness", "color"],
+          "properties": {
+            "enabled": { "type": "boolean", "title": "Enabled" },
+            "length": { "type": "number", "title": "Length", "minimum": 0, "maximum": 500 },
+            "gap": { "type": "number", "title": "Gap", "minimum": 0, "maximum": 100 },
+            "thickness": { "type": "number", "title": "Thickness", "minimum": 0.5, "maximum": 20 },
+            "color": { "$ref": "#/definitions/argb_color", "title": "Color" }
+          }
+        },
+        "circle": {
+          "type": "object",
+          "title": "Circle",
+          "x-ui-level": "accordion",
+          "required": ["enabled", "radius", "thickness", "color"],
+          "properties": {
+            "enabled": { "type": "boolean", "title": "Enabled" },
+            "radius": { "type": "number", "title": "Radius", "minimum": 0, "maximum": 200 },
+            "thickness": { "type": "number", "title": "Thickness", "minimum": 0.5, "maximum": 10 },
+            "color": { "$ref": "#/definitions/argb_color", "title": "Color" }
+          }
+        }
+      }
+    },
+    "timestamp": {
+      "type": "object",
+      "title": "Timestamp",
+      "x-ui-level": "top",
+      "required": ["enabled", "position_x", "position_y", "color", "font_size", "font"],
+      "properties": {
+        "enabled": { "type": "boolean", "title": "Enabled" },
+        "position_x": { "type": "integer", "title": "Position X", "minimum": 0, "maximum": 3840 },
+        "position_y": { "type": "integer", "title": "Position Y", "minimum": 0, "maximum": 2160 },
+        "color": { "$ref": "#/definitions/argb_color", "title": "Color" },
+        "font_size": { "type": "integer", "title": "Font Size", "minimum": 8, "maximum": 128 },
+        "font": {
+          "type": "string",
+          "title": "Font",
+          "enum": ["liberation_sans_bold", "b612_mono_bold", "share_tech_mono", "orbitron_bold"],
+          "default": "liberation_sans_bold"
+        }
+      }
+    },
+    "speed_indicators": {
+      "type": "object",
+      "title": "Speed Indicators",
+      "x-ui-level": "top",
+      "required": ["enabled", "color", "font_size", "max_speed_azimuth", "max_speed_elevation", "font"],
+      "properties": {
+        "enabled": { "type": "boolean", "title": "Enabled" },
+        "color": { "$ref": "#/definitions/argb_color", "title": "Color" },
+        "font_size": { "type": "integer", "title": "Font Size", "minimum": 8, "maximum": 128 },
+        "threshold": {
+          "type": "number",
+          "title": "Display Threshold",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "default": 0.05,
+          "description": "Minimum normalized speed (0.0-1.0) to show indicator"
+        },
+        "max_speed_azimuth": {
+          "type": "number",
+          "title": "Max Speed Azimuth",
+          "minimum": 0.1,
+          "maximum": 360.0,
+          "default": 35.0,
+          "description": "Maximum azimuth speed in degrees/second for normalization"
+        },
+        "max_speed_elevation": {
+          "type": "number",
+          "title": "Max Speed Elevation",
+          "minimum": 0.1,
+          "maximum": 360.0,
+          "default": 35.0,
+          "description": "Maximum elevation speed in degrees/second for normalization"
+        },
+        "font": {
+          "type": "string",
+          "title": "Font",
+          "enum": ["liberation_sans_bold", "b612_mono_bold", "share_tech_mono", "orbitron_bold"],
+          "default": "liberation_sans_bold"
+        }
+      }
+    },
+    "variant_info": {
+      "type": "object",
+      "title": "Variant Info",
+      "x-ui-level": "top",
+      "required": ["enabled", "position_x", "position_y", "color", "font_size", "font"],
+      "properties": {
+        "enabled": { "type": "boolean", "title": "Enabled" },
+        "position_x": { "type": "integer", "title": "Position X", "minimum": 0, "maximum": 3840 },
+        "position_y": { "type": "integer", "title": "Position Y", "minimum": 0, "maximum": 2160 },
+        "color": { "$ref": "#/definitions/argb_color", "title": "Color" },
+        "font_size": { "type": "integer", "title": "Font Size", "minimum": 8, "maximum": 128 },
+        "font": {
+          "type": "string",
+          "title": "Font",
+          "enum": ["liberation_sans_bold", "b612_mono_bold", "share_tech_mono", "orbitron_bold"],
+          "default": "liberation_sans_bold"
+        }
+      }
+    },
+    "navball": {
+      "type": "object",
+      "title": "Navball",
+      "x-ui-level": "top",
+      "required": ["enabled", "position_x", "position_y", "size", "skin", "show_level_marker", "center_indicator"],
+      "properties": {
+        "enabled": { "type": "boolean", "title": "Enabled" },
+        "position_x": { "type": "integer", "title": "Position X", "minimum": -500, "maximum": 3840 },
+        "position_y": { "type": "integer", "title": "Position Y", "minimum": -500, "maximum": 2160 },
+        "size": { "type": "integer", "title": "Size", "minimum": 50, "maximum": 1000 },
+        "skin": {
+          "type": "string",
+          "title": "Skin",
+          "enum": [
+            "stock",
+            "stock_iva",
+            "5thHorseman_v2",
+            "5thHorseman_black",
+            "5thHorseman_brown",
+            "jafo",
+            "kbob_v2",
+            "ordinary_kerman",
+            "trekky",
+            "apollo",
+            "white_owl",
+            "zasnold",
+            "falconb"
+          ]
+        },
+        "show_level_marker": { "type": "boolean", "title": "Show Level Marker" },
+        "center_indicator": {
+          "type": "object",
+          "title": "Center Indicator",
+          "x-ui-level": "accordion",
+          "required": ["enabled", "indicator", "scale"],
+          "properties": {
+            "enabled": { "type": "boolean", "title": "Enabled" },
+            "indicator": {
+              "type": "string",
+              "title": "Indicator",
+              "enum": ["circle", "rectangle", "crosshair"]
+            },
+            "scale": { "type": "number", "title": "Scale", "minimum": 0.05, "maximum": 2.0 }
+          }
+        }
+      }
+    },
+    "celestial_indicators": {
+      "type": "object",
+      "title": "Celestial Indicators",
+      "x-ui-level": "top",
+      "required": ["enabled", "show_sun", "show_moon", "scale", "visibility_threshold", "sun_front_svg", "sun_back_svg", "moon_front_svg", "moon_back_svg"],
+      "properties": {
+        "enabled": { "type": "boolean", "title": "Enabled" },
+        "show_sun": { "type": "boolean", "title": "Show Sun" },
+        "show_moon": { "type": "boolean", "title": "Show Moon" },
+        "scale": {
+          "type": "number",
+          "title": "Scale",
+          "minimum": 0.1,
+          "maximum": 5.0,
+          "description": "Scale factor for celestial indicator size"
+        },
+        "visibility_threshold": {
+          "type": "number",
+          "title": "Visibility Threshold",
+          "minimum": -90.0,
+          "maximum": 90.0,
+          "description": "Altitude threshold in degrees for showing celestial bodies"
+        },
+        "sun_front_svg": {
+          "type": "string",
+          "title": "Sun Front SVG",
+          "description": "Path to sun front hemisphere SVG"
+        },
+        "sun_back_svg": {
+          "type": "string",
+          "title": "Sun Back SVG",
+          "description": "Path to sun back hemisphere SVG"
+        },
+        "moon_front_svg": {
+          "type": "string",
+          "title": "Moon Front SVG",
+          "description": "Path to moon front hemisphere SVG"
+        },
+        "moon_back_svg": {
+          "type": "string",
+          "title": "Moon Back SVG",
+          "description": "Path to moon back hemisphere SVG"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "argb_color": {
+      "type": "string",
+      "pattern": "^#[0-9A-Fa-f]{8}$",
+      "description": "ARGB color in hex format (#AARRGGBB)"
+    }
+  }
+}

@@ -1,0 +1,256 @@
+{
+  "protocolVersion": 1,
+  "systemMonotonicTimeUs": 10175464069,
+  "stateSource": 3,
+  "framePtsDayNs": 0,
+  "framePtsHeatNs": 0,
+  "frameMonotonicDayUs": 0,
+  "frameMonotonicHeatUs": 0,
+  "system": {
+    "cpuTemperature": 42,
+    "gpuTemperature": 42,
+    "gpuLoad": 42,
+    "cpuLoad": 42,
+    "powerConsumption": 42,
+    "loc": 1,
+    "curVideoRecDirYear": 2025,
+    "curVideoRecDirMonth": 12,
+    "curVideoRecDirDay": 28,
+    "curVideoRecDirHour": 10,
+    "curVideoRecDirMinute": 56,
+    "curVideoRecDirSecond": 39,
+    "recEnabled": true,
+    "importantRecEnabled": false,
+    "lowDiskSpace": false,
+    "noDiskSpace": false,
+    "diskSpace": 19,
+    "tracking": false,
+    "vampireMode": false,
+    "stabilizationMode": false,
+    "geodesicMode": false,
+    "cvDumping": false,
+    "recognitionMode": false,
+    "accumulatorState": 1,
+    "extBatCapacity": 0,
+    "extBatStatus": 0
+  },
+  "meteoInternal": {
+    "temperature": -273.1499938964844,
+    "humidity": 0,
+    "pressure": 500
+  },
+  "lrf": {
+    "isScanning": false,
+    "isMeasuring": false,
+    "measureId": 0,
+    "target": {
+      "timestamp": 6,
+      "targetLongitude": -122.4194,
+      "targetLatitude": 37.7749,
+      "targetAltitude": 0,
+      "observerLongitude": -122.4194,
+      "observerLatitude": 37.7749,
+      "observerAltitude": 0,
+      "observerAzimuth": 0.50625,
+      "observerElevation": 0.5625,
+      "observerBank": 0,
+      "distance2d": 0,
+      "distance3b": 0,
+      "observerFixType": 3,
+      "sessionId": 1,
+      "targetId": 12,
+      "type": 0,
+      "uuidPart1": 0,
+      "uuidPart2": 0,
+      "uuidPart3": 0,
+      "uuidPart4": 0
+    },
+    "pointerMode": 1,
+    "fogModeEnabled": false,
+    "isRefining": false,
+    "isContinuousMeasuring": false,
+    "isStarted": false
+  },
+  "time": {
+    "timestamp": 1704110400,
+    "manualTimestamp": 0,
+    "zoneId": 0,
+    "useManualTime": false
+  },
+  "gps": {
+    "longitude": -122.4194,
+    "latitude": 37.7749,
+    "altitude": 0,
+    "manualLongitude": -122.4194,
+    "manualLatitude": 37.7749,
+    "manualAltitude": 0,
+    "fixType": 4,
+    "useManual": false,
+    "timestamp": 1769598068,
+    "isStarted": true
+  },
+  "compass": {
+    "azimuth": 180,
+    "elevation": 0,
+    "bank": 0,
+    "offsetAzimuth": 0,
+    "offsetElevation": 0,
+    "magneticDeclination": 0,
+    "calibrating": false,
+    "isStarted": true,
+    "heading": 180,
+    "pitch": 0,
+    "roll": 0
+  },
+  "rotary": {
+    "azimuth": 16.25625,
+    "azimuthSpeed": 0,
+    "elevation": 0,
+    "elevationSpeed": 0,
+    "platformAzimuth": 3.804612874984741,
+    "platformElevation": -3.7291259765625,
+    "platformBank": 0,
+    "isMoving": false,
+    "mode": 3,
+    "isScanning": false,
+    "isScanningPaused": false,
+    "useRotaryAsCompass": false,
+    "scanTarget": 0,
+    "scanTargetMax": 4,
+    "sunAzimuth": 0,
+    "sunElevation": 0,
+    "currentScanNode": {
+      "index": 0,
+      "DayZoomTableValue": 3,
+      "HeatZoomTableValue": 3,
+      "azimuth": 288.905,
+      "elevation": 7.963,
+      "linger": 0,
+      "speed": 0.277
+    },
+    "isStarted": false
+  },
+  "cameraDay": {
+    "focusPos": 0,
+    "zoomPos": 0,
+    "irisPos": 0.10000000149011612,
+    "infraredFilter": true,
+    "zoomTablePos": 1,
+    "zoomTablePosMax": 4,
+    "fxMode": 1,
+    "autoFocus": false,
+    "autoIris": false,
+    "autoGain": false,
+    "digitalZoomLevel": 1,
+    "claheLevel": 0.5,
+    "horizontalFovDegrees": 30.53304863600079,
+    "verticalFovDegrees": 17.174839857750445,
+    "isStarted": true
+  },
+  "cameraHeat": {
+    "zoomPos": 0,
+    "agcMode": 2,
+    "filter": 1,
+    "autoFocus": false,
+    "zoomTablePos": 1,
+    "zoomTablePosMax": 4,
+    "ddeLevel": 0,
+    "ddeEnabled": false,
+    "fxMode": 1,
+    "digitalZoomLevel": 1,
+    "claheLevel": 0.5,
+    "horizontalFovDegrees": 3,
+    "verticalFovDegrees": 2.25,
+    "isStarted": true
+  },
+  "compassCalibration": {
+    "stage": 0,
+    "finalStage": 12,
+    "targetAzimuth": 56.25,
+    "targetElevation": 6.75,
+    "targetBank": -5.625,
+    "status": 1
+  },
+  "recOsd": {
+    "screen": 1,
+    "heatOsdEnabled": true,
+    "dayOsdEnabled": true,
+    "heatCrosshairOffsetHorizontal": 0,
+    "heatCrosshairOffsetVertical": 0,
+    "dayCrosshairOffsetHorizontal": 0,
+    "dayCrosshairOffsetVertical": 0
+  },
+  "dayCamGlassHeater": {
+    "temperature": 0,
+    "status": false,
+    "isStarted": false
+  },
+  "actualSpaceTime": {
+    "azimuth": 3.804613,
+    "elevation": -3.729126,
+    "bank": 0,
+    "latitude": 37.7749,
+    "longitude": -122.4194,
+    "altitude": 0,
+    "timestamp": 1766919668,
+    "unixTimestamp": 1704110400
+  },
+  "power": {
+    "s0": {
+      "voltage": 13.019,
+      "current": 0.032,
+      "power": 0.42,
+      "isOn": true,
+      "hasAlarm": false
+    },
+    "s1": {
+      "voltage": 13.017,
+      "current": 0.03,
+      "power": 0.39,
+      "isOn": true,
+      "hasAlarm": false
+    },
+    "s2": {
+      "voltage": 13.017,
+      "current": 0.039,
+      "power": 0.51,
+      "isOn": true,
+      "hasAlarm": false
+    },
+    "s3": {
+      "voltage": 13.015,
+      "current": 0.042,
+      "power": 0.55,
+      "isOn": true,
+      "hasAlarm": false
+    },
+    "s4": {
+      "voltage": 13.016,
+      "current": 0.018,
+      "power": 0.23,
+      "isOn": true,
+      "hasAlarm": false
+    },
+    "s5": {
+      "voltage": 30.876,
+      "current": 0.856,
+      "power": 26.44,
+      "isOn": true,
+      "hasAlarm": false
+    },
+    "s6": {
+      "voltage": 30.924,
+      "current": 0.078,
+      "power": 2.41,
+      "isOn": true,
+      "hasAlarm": false
+    },
+    "s7": {
+      "voltage": 0,
+      "current": 0,
+      "power": 0,
+      "isOn": false,
+      "hasAlarm": false
+    }
+  }
+}

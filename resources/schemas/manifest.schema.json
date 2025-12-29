@@ -1,0 +1,193 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://jettison.example.com/schemas/manifest.schema.json",
+  "title": "Jettison OSD Package Manifest",
+  "description": "Schema for validating Jettison OSD WASM package manifests",
+  "type": "object",
+  "required": ["manifest_version", "package", "archive", "contents", "system_requirements"],
+  "properties": {
+    "manifest_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the manifest format itself"
+    },
+    "package": {
+      "type": "object",
+      "required": ["name", "version", "variant", "created_at", "git_sha", "build_mode"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Package name (e.g., jettison-osd-live-day)"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Package version (semantic versioning)"
+        },
+        "variant": {
+          "enum": ["live_day", "live_thermal", "recording_day", "recording_thermal"],
+          "description": "Deployment variant type"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of package creation (UTC)"
+        },
+        "git_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{7,40}$",
+          "description": "Git commit SHA (7-char short or 40-char full)"
+        },
+        "git_branch": {
+          "type": "string",
+          "description": "Git branch name"
+        },
+        "build_mode": {
+          "enum": ["production", "development"],
+          "description": "Build mode (production or development)"
+        }
+      }
+    },
+    "archive": {
+      "type": "object",
+      "required": ["filename", "sha256", "size_bytes", "compression"],
+      "properties": {
+        "filename": {
+          "type": "string",
+          "pattern": "\\.(tar\\.gz|tgz)$",
+          "description": "Inner archive filename"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "SHA256 checksum of inner archive (hex)"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Size of inner archive in bytes"
+        },
+        "compression": {
+          "enum": ["gzip", "bzip2", "xz"],
+          "description": "Compression algorithm used"
+        }
+      }
+    },
+    "contents": {
+      "type": "object",
+      "required": ["wasm", "config", "resources"],
+      "properties": {
+        "wasm": {
+          "type": "object",
+          "required": ["filename", "sha256", "size_bytes"],
+          "properties": {
+            "filename": {
+              "type": "string",
+              "pattern": "\\.wasm$",
+              "description": "WASM binary filename"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$",
+              "description": "SHA256 checksum of WASM binary"
+            },
+            "size_bytes": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Size of WASM binary in bytes"
+            }
+          }
+        },
+        "config": {
+          "type": "object",
+          "required": ["filename", "sha256", "schema_version"],
+          "properties": {
+            "filename": {
+              "type": "string",
+              "pattern": "\\.json$",
+              "description": "Config JSON filename"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$",
+              "description": "SHA256 checksum of config file"
+            },
+            "schema_version": {
+              "type": "string",
+              "pattern": "^\\d+\\.\\d+\\.\\d+$",
+              "description": "Version of config schema"
+            }
+          }
+        },
+        "resources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["path", "sha256", "size_bytes", "type"],
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Relative path to resource file"
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$",
+                "description": "SHA256 checksum of resource file"
+              },
+              "size_bytes": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Size of resource file in bytes"
+              },
+              "type": {
+                "enum": ["font", "texture", "svg", "schema"],
+                "description": "Resource file type"
+              }
+            }
+          }
+        }
+      }
+    },
+    "system_requirements": {
+      "type": "object",
+      "required": ["wasm_runtime", "resolution", "mode", "stream_type"],
+      "properties": {
+        "wasm_runtime": {
+          "type": "string",
+          "description": "Required WASM runtime (e.g., 'wasmtime >= 27.0.0')"
+        },
+        "resolution": {
+          "type": "string",
+          "pattern": "^\\d+x\\d+$",
+          "description": "Target resolution (e.g., '1920x1080')"
+        },
+        "mode": {
+          "enum": ["live", "recording"],
+          "description": "Deployment mode"
+        },
+        "stream_type": {
+          "enum": ["day", "thermal"],
+          "description": "Camera stream type"
+        }
+      }
+    },
+    "signature": {
+      "type": "object",
+      "required": ["algorithm", "public_key_fingerprint"],
+      "properties": {
+        "algorithm": {
+          "enum": ["RSA-SHA256", "Ed25519"],
+          "description": "Signature algorithm used"
+        },
+        "public_key_fingerprint": {
+          "type": "string",
+          "minLength": 1,
+          "description": "SHA256 fingerprint of the public key"
+        }
+      }
+    }
+  }
+}
