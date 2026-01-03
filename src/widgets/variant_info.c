@@ -209,7 +209,7 @@ variant_info_render(osd_context_t *ctx, const osd_state_t *state)
   snprintf(items[14].value, sizeof(items[14].value), "%s", OSD_GIT_COMMIT);
   items[14].key = "Commit";
 
-  snprintf(items[15].value, sizeof(items[15].value), "%s %s", OSD_BUILD_DATE,
+  snprintf(items[15].value, sizeof(items[15].value), "%s %s UTC", OSD_BUILD_DATE,
            OSD_BUILD_TIME);
   items[15].key = "Built";
 
