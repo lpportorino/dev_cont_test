@@ -13,6 +13,20 @@ echo "=================================="
 cd /workspace
 
 # ============================================================================
+# 0. Ensure deployment tools are installed (handles cached images)
+# ============================================================================
+echo ""
+echo "🔧 Checking deployment tools..."
+
+if ! command -v rsync &> /dev/null; then
+    echo "⬇️  Installing rsync (missing from cached image)..."
+    sudo apt-get update -qq && sudo apt-get install -y -qq rsync openssh-client
+    echo "✅ rsync installed"
+else
+    echo "✅ rsync available"
+fi
+
+# ============================================================================
 # 0. Fix Named Volume Permissions
 # ============================================================================
 # Named volumes are created with root ownership. Fix permissions so vscode user
