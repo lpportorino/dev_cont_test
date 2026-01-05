@@ -18,12 +18,18 @@ cd /workspace
 echo ""
 echo "🔧 Checking deployment tools..."
 
-if ! command -v rsync &> /dev/null; then
-    echo "⬇️  Installing rsync (missing from cached image)..."
-    sudo apt-get update -qq && sudo apt-get install -y -qq rsync openssh-client
-    echo "✅ rsync installed"
+# Install missing tools (handles cached images without these packages)
+MISSING_PKGS=""
+command -v rsync &> /dev/null || MISSING_PKGS="$MISSING_PKGS rsync openssh-client"
+command -v bear &> /dev/null || MISSING_PKGS="$MISSING_PKGS bear"
+command -v jq &> /dev/null || MISSING_PKGS="$MISSING_PKGS jq"
+
+if [ -n "$MISSING_PKGS" ]; then
+    echo "⬇️  Installing missing tools:$MISSING_PKGS"
+    sudo apt-get update -qq && sudo apt-get install -y -qq $MISSING_PKGS
+    echo "✅ Tools installed"
 else
-    echo "✅ rsync available"
+    echo "✅ All tools available (rsync, bear, jq)"
 fi
 
 # ============================================================================

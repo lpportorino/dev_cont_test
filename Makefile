@@ -12,6 +12,7 @@
 # Parallel builds use JOBS=8 by default (override with: make all JOBS=N)
 
 .PHONY: all default build clean help \
+        index \
         format lint quality \
         recording_day recording_thermal live_day live_thermal \
         _recording_day _recording_thermal _live_day _live_thermal \
@@ -56,6 +57,30 @@ $(shell mkdir -p $(LOGS_DIR))
 #==============================================================================
 
 default: recording_day
+
+#==============================================================================
+# IDE Support (compile_commands.json for CLion/clangd)
+#==============================================================================
+
+index:
+	@echo "=== Generating compile_commands.json (all 4 variants) ==="
+	@mkdir -p $(LOGS_DIR)
+	@echo "[]" > compile_commands.json
+	@cp compile_commands.json prev_compile_commands.json
+	@for variant in live_day live_thermal recording_day recording_thermal; do \
+		echo "Indexing: $$variant..."; \
+		rm -rf $(BUILD_DIR)/$$variant; \
+		bear -- $(MAKE) --no-print-directory _$${variant} BUILD_MODE=dev 2>&1 | tee $(LOGS_DIR)/index_$$variant.log; \
+		if [ -f compile_commands.json ]; then \
+			jq -s '.[0] + .[1]' prev_compile_commands.json compile_commands.json > temp_compile_commands.json && \
+			mv temp_compile_commands.json compile_commands.json; \
+		fi; \
+		cp compile_commands.json prev_compile_commands.json; \
+	done
+	@rm -f prev_compile_commands.json
+	@echo ""
+	@echo "Generated: compile_commands.json (merged from 4 variants)"
+	@echo "CLion: File → Reload Compilation Database (or it auto-detects)"
 
 #==============================================================================
 # Quality Targets (run automatically before builds)
@@ -383,6 +408,9 @@ help:
 	@echo "  make format       Run clang-format"
 	@echo "  make lint         Run clang-tidy"
 	@echo "  make quality      Run format + lint"
+	@echo ""
+	@echo "IDE Support:"
+	@echo "  make index        Generate compile_commands.json (CLion/clangd)"
 	@echo ""
 	@echo "Options:"
 	@echo "  BUILD_MODE=production  Optimized (default, ~640KB)"

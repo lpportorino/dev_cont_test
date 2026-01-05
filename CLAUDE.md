@@ -76,7 +76,19 @@ make package-all-dev    # Build + sign all 4 variants (dev)
 make png-all            # Generate PNGs (4 variants)
 make video              # Generate videos (4 variants)
 make ci                 # Full CI pipeline
+make index              # Generate compile_commands.json for CLion/clangd
 ```
+
+### IDE Support (CLion)
+
+The project includes a pre-generated `compile_commands.json` for CLion code intelligence. This file is committed to the repo since dev container paths are stable (`/workspaces/dev_cont_test/...`).
+
+To regenerate after adding new source files:
+```bash
+./tools/devcontainer-build.sh exec "make index"
+```
+
+This runs `bear` on all 4 variants and merges the results with `jq`, capturing all `-D` define combinations so CLion sees all code paths.
 
 ### Build Modes
 
