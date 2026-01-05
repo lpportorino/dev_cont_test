@@ -1,6 +1,9 @@
 #!/bin/bash
-# Build workflow: format → lint → compile
+# Compile a single WASM variant
 # Supports 4 variants: live/recording × day/thermal
+#
+# Note: Format and lint are handled by the Makefile (runs once before parallel builds)
+# This script only compiles - call `make quality` separately if needed.
 
 set -e
 
@@ -12,48 +15,12 @@ cd "$PROJECT_ROOT"
 # Parse variant parameter (default: recording_day for backwards compatibility)
 VARIANT="${VARIANT:-recording_day}"
 
-echo "=========================================="
-echo "  WASM OSD Build Workflow"
-echo "  Variant: $VARIANT"
-echo "=========================================="
-echo ""
-
-# Step 1: Format
-echo "Step 1/3: Formatting source files..."
-echo "--------------------------------------"
-if ! ./tools/format.sh; then
-  echo "❌ Formatting failed"
-  exit 1
-fi
-echo ""
-
-# Step 2: Lint
-echo "Step 2/3: Linting source files..."
-echo "--------------------------------------"
-if ! ./tools/lint.sh; then
-  echo "❌ Linting failed"
-  exit 1
-fi
-echo ""
-
-# Step 3: Compile
-echo "Step 3/3: Compiling to WASM..."
+echo "Building: $VARIANT"
 echo "--------------------------------------"
 
-# Check for build directory and subdirectories
-if [ ! -d "build" ]; then
-  mkdir -p build
-  echo "Created build directory"
-fi
-
-# Create build subdirectories for modular organization
-mkdir -p build/core
-mkdir -p build/rendering
-mkdir -p build/widgets
-mkdir -p build/resources
-mkdir -p build/utils
-mkdir -p build/proto
-mkdir -p build/vendor
+# Variant-specific build directory (avoids collisions in parallel builds)
+BUILD_SUBDIR="build/${VARIANT}"
+mkdir -p "$BUILD_SUBDIR"/{core,rendering,widgets,resources,utils,proto,vendor}
 
 # Parse variant to determine build flags
 case "$VARIANT" in
@@ -92,13 +59,9 @@ case "$VARIANT" in
     ;;
 esac
 
-# Copy variant-specific config to build/resources/
-# Both generic config.json and variant-specific {variant}_config.json
+# Copy variant config to variant-specific build dir
 echo "Using config: $CONFIG_SOURCE"
-mkdir -p "$PROJECT_ROOT/build/resources"
-cp "$PROJECT_ROOT/$CONFIG_SOURCE" "$PROJECT_ROOT/build/resources/config.json"
-cp "$PROJECT_ROOT/$CONFIG_SOURCE" "$PROJECT_ROOT/build/resources/${VARIANT}_config.json"
-echo "Saved variant config: build/resources/${VARIANT}_config.json"
+cp "$PROJECT_ROOT/$CONFIG_SOURCE" "$PROJECT_ROOT/$BUILD_SUBDIR/resources/config.json"
 
 # Determine build mode (default: production)
 BUILD_MODE="${BUILD_MODE:-production}"
@@ -192,9 +155,9 @@ VENDOR_FILES=$(find vendor -name "*.c" -not -path "*/test/*" -not -path "*/docs/
 # Compile main source files
 OBJECT_FILES=""
 for c_file in $C_FILES; do
-  # Preserve directory structure: src/core/foo.c → build/core/foo.o
+  # Preserve directory structure: src/core/foo.c → build/{variant}/core/foo.o
   rel_path="${c_file#src/}"  # Remove src/ prefix
-  obj_file="build/${rel_path%.c}.o"
+  obj_file="$BUILD_SUBDIR/${rel_path%.c}.o"
 
   echo "  Compiling: $c_file → $obj_file"
 
@@ -223,9 +186,8 @@ for c_file in $C_FILES; do
 done
 
 # Compile proto files
-mkdir -p build/proto
 for c_file in $PROTO_FILES; do
-  obj_file="build/proto/$(basename ${c_file%.c}.o)"
+  obj_file="$BUILD_SUBDIR/proto/$(basename ${c_file%.c}.o)"
   echo "  Compiling: $c_file → $obj_file"
 
   "$WASI_SDK_PATH/bin/clang" \
@@ -248,9 +210,8 @@ for c_file in $PROTO_FILES; do
 done
 
 # Compile vendor files (no DEAD_CODE_FLAGS - third-party code we don't control)
-mkdir -p build/vendor
 for c_file in $VENDOR_FILES; do
-  obj_file="build/vendor/$(basename ${c_file%.c}.o)"
+  obj_file="$BUILD_SUBDIR/vendor/$(basename ${c_file%.c}.o)"
   echo "  Compiling: $c_file → $obj_file"
 
   "$WASI_SDK_PATH/bin/clang" \

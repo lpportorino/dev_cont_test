@@ -3,20 +3,27 @@
 #
 # Main workflow:
 #   make                    - Build recording_day (quality + compile)
-#   make package            - Build + package recording_day
-#   make png                - Generate PNG snapshot
+#   make all                - Build all 4 variants (parallel, quality runs once)
+#   make package-all        - Build + package all variants
+#   make deploy             - Build + package + deploy all
 #   make clean              - Clean all artifacts
 #
-# All builds automatically run format + lint first.
+# Quality (format + lint) runs ONCE before multi-variant builds.
+# Parallel builds use JOBS=8 by default (override with: make all JOBS=N)
 
 .PHONY: all default build clean help \
         format lint quality \
         recording_day recording_thermal live_day live_thermal \
+        _recording_day _recording_thermal _live_day _live_thermal \
         recording_day_dev recording_thermal_dev live_day_dev live_thermal_dev all-dev \
+        _recording_day_dev _recording_thermal_dev _live_day_dev _live_thermal_dev \
         package package-all package-dev package-all-dev \
         deploy deploy-prod deploy-frontend deploy-frontend-prod deploy-gallery deploy-gallery-prod \
         harness video-harness png-harness png png-all video video-all \
         proto ci all-modes png-all-modes
+
+# Parallel jobs for multi-variant builds (override with: make all JOBS=N)
+JOBS ?= 8
 
 #==============================================================================
 # Configuration
@@ -70,55 +77,55 @@ quality: format lint
 # Build Targets
 #==============================================================================
 
-recording_day: quality
-	@echo "=== Building recording_day ==="
+# Public targets: run quality first, then compile (for single-variant builds)
+recording_day: quality _recording_day
+recording_thermal: quality _recording_thermal
+live_day: quality _live_day
+live_thermal: quality _live_thermal
+
+# Internal targets: compile only (called by parallel builds)
+_recording_day:
 	@VARIANT=recording_day BUILD_MODE=$(BUILD_MODE) ./tools/build.sh 2>&1 | tee $(LOGS_DIR)/build_recording_day.log
 
-recording_thermal: quality
-	@echo "=== Building recording_thermal ==="
+_recording_thermal:
 	@VARIANT=recording_thermal BUILD_MODE=$(BUILD_MODE) ./tools/build.sh 2>&1 | tee $(LOGS_DIR)/build_recording_thermal.log
 
-live_day: quality
-	@echo "=== Building live_day ==="
+_live_day:
 	@VARIANT=live_day BUILD_MODE=$(BUILD_MODE) ./tools/build.sh 2>&1 | tee $(LOGS_DIR)/build_live_day.log
 
-live_thermal: quality
-	@echo "=== Building live_thermal ==="
+_live_thermal:
 	@VARIANT=live_thermal BUILD_MODE=$(BUILD_MODE) ./tools/build.sh 2>&1 | tee $(LOGS_DIR)/build_live_thermal.log
 
+# Build all 4 variants in parallel (quality runs once, then 4 parallel compiles)
 all: quality
-	@echo "=== Building all 4 variants ==="
-	@VARIANT=live_day BUILD_MODE=$(BUILD_MODE) ./tools/build.sh 2>&1 | tee $(LOGS_DIR)/build_live_day.log
-	@VARIANT=live_thermal BUILD_MODE=$(BUILD_MODE) ./tools/build.sh 2>&1 | tee $(LOGS_DIR)/build_live_thermal.log
-	@VARIANT=recording_day BUILD_MODE=$(BUILD_MODE) ./tools/build.sh 2>&1 | tee $(LOGS_DIR)/build_recording_day.log
-	@VARIANT=recording_thermal BUILD_MODE=$(BUILD_MODE) ./tools/build.sh 2>&1 | tee $(LOGS_DIR)/build_recording_thermal.log
+	@echo "=== Building all 4 variants ($(JOBS) parallel jobs) ==="
+	@$(MAKE) -j$(JOBS) --no-print-directory _live_day _live_thermal _recording_day _recording_thermal BUILD_MODE=$(BUILD_MODE)
 	@echo ""
 	@echo "=== All 4 variants built ==="
 	@ls -lh $(BUILD_DIR)/*.wasm 2>/dev/null || true
 
 # Dev build targets (debug builds with symbols, ~2.9MB each)
-recording_day_dev: quality
-	@echo "=== Building recording_day (dev) ==="
+recording_day_dev: quality _recording_day_dev
+recording_thermal_dev: quality _recording_thermal_dev
+live_day_dev: quality _live_day_dev
+live_thermal_dev: quality _live_thermal_dev
+
+_recording_day_dev:
 	@VARIANT=recording_day BUILD_MODE=dev ./tools/build.sh 2>&1 | tee $(LOGS_DIR)/build_recording_day_dev.log
 
-recording_thermal_dev: quality
-	@echo "=== Building recording_thermal (dev) ==="
+_recording_thermal_dev:
 	@VARIANT=recording_thermal BUILD_MODE=dev ./tools/build.sh 2>&1 | tee $(LOGS_DIR)/build_recording_thermal_dev.log
 
-live_day_dev: quality
-	@echo "=== Building live_day (dev) ==="
+_live_day_dev:
 	@VARIANT=live_day BUILD_MODE=dev ./tools/build.sh 2>&1 | tee $(LOGS_DIR)/build_live_day_dev.log
 
-live_thermal_dev: quality
-	@echo "=== Building live_thermal (dev) ==="
+_live_thermal_dev:
 	@VARIANT=live_thermal BUILD_MODE=dev ./tools/build.sh 2>&1 | tee $(LOGS_DIR)/build_live_thermal_dev.log
 
+# Build all 4 dev variants in parallel
 all-dev: quality
-	@echo "=== Building all 4 variants (dev) ==="
-	@VARIANT=live_day BUILD_MODE=dev ./tools/build.sh 2>&1 | tee $(LOGS_DIR)/build_live_day_dev.log
-	@VARIANT=live_thermal BUILD_MODE=dev ./tools/build.sh 2>&1 | tee $(LOGS_DIR)/build_live_thermal_dev.log
-	@VARIANT=recording_day BUILD_MODE=dev ./tools/build.sh 2>&1 | tee $(LOGS_DIR)/build_recording_day_dev.log
-	@VARIANT=recording_thermal BUILD_MODE=dev ./tools/build.sh 2>&1 | tee $(LOGS_DIR)/build_recording_thermal_dev.log
+	@echo "=== Building all 4 variants (dev, $(JOBS) parallel jobs) ==="
+	@$(MAKE) -j$(JOBS) --no-print-directory _live_day_dev _live_thermal_dev _recording_day_dev _recording_thermal_dev
 	@echo ""
 	@echo "=== All 4 variants built (dev) ==="
 	@ls -lh $(BUILD_DIR)/*_dev.wasm 2>/dev/null || true
@@ -271,16 +278,13 @@ proto:
 # CI Targets (Full Pipeline)
 #==============================================================================
 
+# Build all 8 variants (4 production + 4 dev) in parallel
 all-modes: quality
-	@echo "=== Building all variants in both modes ==="
-	@for mode in production dev; do \
-		suffix=""; \
-		[ "$$mode" = "dev" ] && suffix="_dev"; \
-		for variant in live_day live_thermal recording_day recording_thermal; do \
-			echo "Building $$variant ($$mode)..."; \
-			VARIANT=$$variant BUILD_MODE=$$mode ./tools/build.sh 2>&1 | tee $(LOGS_DIR)/build_$${variant}_$${mode}.log; \
-		done; \
-	done
+	@echo "=== Building all 8 variants ($(JOBS) parallel jobs) ==="
+	@$(MAKE) -j$(JOBS) --no-print-directory \
+		_live_day _live_thermal _recording_day _recording_thermal \
+		_live_day_dev _live_thermal_dev _recording_day_dev _recording_thermal_dev \
+		BUILD_MODE=production
 	@echo ""
 	@echo "=== All 8 WASM variants built ==="
 	@ls -lh $(BUILD_DIR)/*.wasm 2>/dev/null || true
@@ -383,6 +387,7 @@ help:
 	@echo "Options:"
 	@echo "  BUILD_MODE=production  Optimized (default, ~640KB)"
 	@echo "  BUILD_MODE=dev         Debug + hardening (~2.9MB)"
+	@echo "  JOBS=N                 Parallel jobs for multi-variant builds (default: 8)"
 	@echo ""
 	@echo "Output Directories:"
 	@echo "  build/            WASM binaries"
