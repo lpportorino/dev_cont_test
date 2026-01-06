@@ -11,7 +11,7 @@
 # Quality (format + lint) runs ONCE before multi-variant builds.
 # Parallel builds use JOBS=8 by default (override with: make all JOBS=N)
 
-.PHONY: all default build clean help \
+.PHONY: all default build clean clean-wasm clean-packages clean-artifacts help \
         index \
         format lint quality \
         recording_day recording_thermal live_day live_thermal \
@@ -122,8 +122,10 @@ _live_thermal:
 	@VARIANT=live_thermal BUILD_MODE=$(BUILD_MODE) ./tools/build.sh 2>&1 | tee $(LOGS_DIR)/build_live_thermal.log
 
 # Build all 4 variants in parallel (quality runs once, then 4 parallel compiles)
+# Clean WASM files first to ensure no stale binaries can be packaged
 all: quality
 	@echo "=== Building all 4 variants ($(JOBS) parallel jobs) ==="
+	@rm -f $(BUILD_DIR)/*.wasm
 	@$(MAKE) -j$(JOBS) --no-print-directory _live_day _live_thermal _recording_day _recording_thermal BUILD_MODE=$(BUILD_MODE)
 	@echo ""
 	@echo "=== All 4 variants built ==="
@@ -148,8 +150,10 @@ _live_thermal_dev:
 	@VARIANT=live_thermal BUILD_MODE=dev ./tools/build.sh 2>&1 | tee $(LOGS_DIR)/build_live_thermal_dev.log
 
 # Build all 4 dev variants in parallel
+# Clean WASM files first to ensure no stale binaries can be packaged
 all-dev: quality
 	@echo "=== Building all 4 variants (dev, $(JOBS) parallel jobs) ==="
+	@rm -f $(BUILD_DIR)/*_dev.wasm
 	@$(MAKE) -j$(JOBS) --no-print-directory _live_day_dev _live_thermal_dev _recording_day_dev _recording_thermal_dev
 	@echo ""
 	@echo "=== All 4 variants built (dev) ==="
@@ -308,8 +312,10 @@ proto:
 #==============================================================================
 
 # Build all 8 variants (4 production + 4 dev) in parallel
+# Clean WASM files first to ensure no stale binaries can be packaged
 all-modes: quality
 	@echo "=== Building all 8 variants ($(JOBS) parallel jobs) ==="
+	@rm -f $(BUILD_DIR)/*.wasm
 	@$(MAKE) -j$(JOBS) --no-print-directory \
 		_live_day _live_thermal _recording_day _recording_thermal \
 		_live_day_dev _live_thermal_dev _recording_day_dev _recording_thermal_dev \
@@ -355,8 +361,26 @@ ci: proto all-modes png-all-modes video-all
 # Clean
 #==============================================================================
 
+# Clean WASM binaries only (keeps .o files for faster rebuilds)
+clean-wasm:
+	@echo "=== Cleaning WASM binaries ==="
+	rm -f $(BUILD_DIR)/*.wasm
+	@echo "Cleaned: build/*.wasm"
+
+# Clean packages only (useful before manual packaging)
+clean-packages:
+	@echo "=== Cleaning packages ==="
+	rm -f $(DIST_DIR)/*.tar
+	rm -f $(DIST_DIR)/*.png
+	@echo "Cleaned: dist/*.tar dist/*.png"
+
+# Clean deployable artifacts (WASM + packages, keeps .o files)
+clean-artifacts: clean-wasm clean-packages
+	@echo "Cleaned all deployable artifacts"
+
+# Full clean (removes everything including .o files)
 clean:
-	@echo "=== Cleaning ==="
+	@echo "=== Full clean ==="
 	rm -rf $(BUILD_DIR)
 	rm -rf $(DIST_DIR)
 	rm -rf $(SNAPSHOT_DIR)
@@ -377,7 +401,12 @@ help:
 	@echo "  make all          Build all 4 variants"
 	@echo "  make package      Build + package recording_day"
 	@echo "  make package-all  Build + package all variants"
-	@echo "  make clean        Remove all artifacts"
+	@echo ""
+	@echo "Clean Targets:"
+	@echo "  make clean           Full clean (removes everything)"
+	@echo "  make clean-wasm      Clean WASM binaries only (keeps .o files)"
+	@echo "  make clean-packages  Clean packages and PNGs only"
+	@echo "  make clean-artifacts Clean WASM + packages (keeps .o files)"
 	@echo ""
 	@echo "Deploy Targets:"
 	@echo "  make deploy            Dev build + deploy (frontend + gallery)"
