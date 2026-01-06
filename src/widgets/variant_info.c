@@ -281,14 +281,15 @@ variant_info_render(osd_context_t *ctx, const osd_state_t *state)
       int sample_count;
       if (delta_history_stats(monotonic_us, &avg_ms, &std_ms, &sample_count))
         {
-          // Fixed-width format: xxxx.xx for stable display
+          // Zero-padded fixed-width format for stable display
+          // Sign + zero-pad ensures consistent width regardless of font
           snprintf(items[2].value, sizeof(items[2].value),
-                   "%7.2f (avg %7.2f std %6.2f n=%3d)", delta_ms, avg_ms,
+                   "%+08.2f (avg %+08.2f std %07.2f n=%03d)", delta_ms, avg_ms,
                    std_ms, sample_count);
         }
       else
         {
-          snprintf(items[2].value, sizeof(items[2].value), "%7.2f ms",
+          snprintf(items[2].value, sizeof(items[2].value), "%+08.2f ms",
                    delta_ms);
         }
     }
