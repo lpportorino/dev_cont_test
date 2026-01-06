@@ -32,7 +32,7 @@ typedef struct _ser_JonGUIState
   uint64_t system_monotonic_time_us; /* System monotonic time in microseconds */
   ser_JonGuiDataStateSource state_source;
   uint64_t
-    frame_pts_day_ns; /* Day pipeline GStreamer buffer PTS in nanoseconds */
+    frame_pts_day_ns;  /* Day pipeline GStreamer buffer PTS in nanoseconds */
   uint64_t
     frame_pts_heat_ns; /* Heat pipeline GStreamer buffer PTS in nanoseconds */
   uint64_t frame_monotonic_day_us; /* Monotonic time when day frame was captured
@@ -76,78 +76,38 @@ extern "C"
 #endif
 
 /* Initializer values for message structs */
-#define ser_JonGUIState_init_default               \
-  { 0,                                             \
-    0,                                             \
-    _ser_JonGuiDataStateSource_MIN,                \
-    0,                                             \
-    0,                                             \
-    0,                                             \
-    0,                                             \
-    false,                                         \
-    ser_JonGuiDataSystem_init_default,             \
-    false,                                         \
-    ser_JonGuiDataMeteo_init_default,              \
-    false,                                         \
-    ser_JonGuiDataLrf_init_default,                \
-    false,                                         \
-    ser_JonGuiDataTime_init_default,               \
-    false,                                         \
-    ser_JonGuiDataGps_init_default,                \
-    false,                                         \
-    ser_JonGuiDataCompass_init_default,            \
-    false,                                         \
-    ser_JonGuiDataRotary_init_default,             \
-    false,                                         \
-    ser_JonGuiDataCameraDay_init_default,          \
-    false,                                         \
-    ser_JonGuiDataCameraHeat_init_default,         \
-    false,                                         \
-    ser_JonGuiDataCompassCalibration_init_default, \
-    false,                                         \
-    ser_JonGuiDataRecOsd_init_default,             \
-    false,                                         \
-    ser_JonGuiDataDayCamGlassHeater_init_default,  \
-    false,                                         \
-    ser_JonGuiDataActualSpaceTime_init_default,    \
-    false,                                         \
-    ser_JonGuiDataPower_init_default }
-#define ser_JonGUIState_init_zero               \
-  { 0,                                          \
-    0,                                          \
-    _ser_JonGuiDataStateSource_MIN,             \
-    0,                                          \
-    0,                                          \
-    0,                                          \
-    0,                                          \
-    false,                                      \
-    ser_JonGuiDataSystem_init_zero,             \
-    false,                                      \
-    ser_JonGuiDataMeteo_init_zero,              \
-    false,                                      \
-    ser_JonGuiDataLrf_init_zero,                \
-    false,                                      \
-    ser_JonGuiDataTime_init_zero,               \
-    false,                                      \
-    ser_JonGuiDataGps_init_zero,                \
-    false,                                      \
-    ser_JonGuiDataCompass_init_zero,            \
-    false,                                      \
-    ser_JonGuiDataRotary_init_zero,             \
-    false,                                      \
-    ser_JonGuiDataCameraDay_init_zero,          \
-    false,                                      \
-    ser_JonGuiDataCameraHeat_init_zero,         \
-    false,                                      \
-    ser_JonGuiDataCompassCalibration_init_zero, \
-    false,                                      \
-    ser_JonGuiDataRecOsd_init_zero,             \
-    false,                                      \
-    ser_JonGuiDataDayCamGlassHeater_init_zero,  \
-    false,                                      \
-    ser_JonGuiDataActualSpaceTime_init_zero,    \
-    false,                                      \
-    ser_JonGuiDataPower_init_zero }
+#define ser_JonGUIState_init_default                                           \
+  {                                                                            \
+    0, 0, _ser_JonGuiDataStateSource_MIN, 0, 0, 0, 0, false,                   \
+      ser_JonGuiDataSystem_init_default, false,                                \
+      ser_JonGuiDataMeteo_init_default, false, ser_JonGuiDataLrf_init_default, \
+      false, ser_JonGuiDataTime_init_default, false,                           \
+      ser_JonGuiDataGps_init_default, false,                                   \
+      ser_JonGuiDataCompass_init_default, false,                               \
+      ser_JonGuiDataRotary_init_default, false,                                \
+      ser_JonGuiDataCameraDay_init_default, false,                             \
+      ser_JonGuiDataCameraHeat_init_default, false,                            \
+      ser_JonGuiDataCompassCalibration_init_default, false,                    \
+      ser_JonGuiDataRecOsd_init_default, false,                                \
+      ser_JonGuiDataDayCamGlassHeater_init_default, false,                     \
+      ser_JonGuiDataActualSpaceTime_init_default, false,                       \
+      ser_JonGuiDataPower_init_default                                         \
+  }
+#define ser_JonGUIState_init_zero                                              \
+  {                                                                            \
+    0, 0, _ser_JonGuiDataStateSource_MIN, 0, 0, 0, 0, false,                   \
+      ser_JonGuiDataSystem_init_zero, false, ser_JonGuiDataMeteo_init_zero,    \
+      false, ser_JonGuiDataLrf_init_zero, false, ser_JonGuiDataTime_init_zero, \
+      false, ser_JonGuiDataGps_init_zero, false,                               \
+      ser_JonGuiDataCompass_init_zero, false, ser_JonGuiDataRotary_init_zero,  \
+      false, ser_JonGuiDataCameraDay_init_zero, false,                         \
+      ser_JonGuiDataCameraHeat_init_zero, false,                               \
+      ser_JonGuiDataCompassCalibration_init_zero, false,                       \
+      ser_JonGuiDataRecOsd_init_zero, false,                                   \
+      ser_JonGuiDataDayCamGlassHeater_init_zero, false,                        \
+      ser_JonGuiDataActualSpaceTime_init_zero, false,                          \
+      ser_JonGuiDataPower_init_zero                                            \
+  }
 
 /* Field tags (for use in manual encoding/decoding) */
 #define ser_JonGUIState_protocol_version_tag 1

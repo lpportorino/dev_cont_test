@@ -168,6 +168,7 @@ package: recording_day
 
 package-all: all
 	@echo "=== Packaging all 4 variants ==="
+	@rm -f $(DIST_DIR)/jettison-osd-*.tar
 	@mkdir -p $(DIST_DIR)
 	@./tools/package.sh live_day 2>&1 | tee $(LOGS_DIR)/package_live_day.log
 	@./tools/package.sh live_thermal 2>&1 | tee $(LOGS_DIR)/package_live_thermal.log
@@ -186,6 +187,7 @@ package-dev: recording_day_dev
 
 package-all-dev: all-dev
 	@echo "=== Packaging all 4 variants (dev) ==="
+	@rm -f $(DIST_DIR)/*-dev.tar
 	@mkdir -p $(DIST_DIR)
 	@./tools/package.sh live_day dev 2>&1 | tee $(LOGS_DIR)/package_live_day_dev.log
 	@./tools/package.sh live_thermal dev 2>&1 | tee $(LOGS_DIR)/package_live_thermal_dev.log

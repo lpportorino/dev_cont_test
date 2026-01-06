@@ -142,20 +142,19 @@ extern "C"
       { NULL }, NULL                       \
     }                                      \
   }
-#define jon_video_VideoRangeQuery_init_default \
-  { 0, 0, { { NULL }, NULL }, false, 0, false, 0 }
-#define jon_video_VideoMetaResponse_init_default \
-  { { { NULL }, NULL }, { { NULL }, NULL }, 0, 0, 0, { { NULL }, NULL }, 0 }
-#define jon_video_VideoMeta_init_default \
-  { { { NULL }, NULL },                  \
-    0,                                   \
-    0,                                   \
-    { { NULL }, NULL },                  \
-    { { NULL }, NULL },                  \
-    0,                                   \
-    0,                                   \
-    false,                               \
-    jon_video_SampleTable_init_default }
+#define jon_video_VideoRangeQuery_init_default   \
+  {                                              \
+    0, 0, { { NULL }, NULL }, false, 0, false, 0 \
+  }
+#define jon_video_VideoMetaResponse_init_default                           \
+  {                                                                        \
+    { { NULL }, NULL }, { { NULL }, NULL }, 0, 0, 0, { { NULL }, NULL }, 0 \
+  }
+#define jon_video_VideoMeta_init_default                                    \
+  {                                                                         \
+    { { NULL }, NULL }, 0, 0, { { NULL }, NULL }, { { NULL }, NULL }, 0, 0, \
+      false, jon_video_SampleTable_init_default                             \
+  }
 #define jon_video_SampleTable_init_default                      \
   {                                                             \
     { { NULL }, NULL }, { { NULL }, NULL }, { { NULL }, NULL }, \
@@ -164,7 +163,10 @@ extern "C"
       { NULL }, NULL                                            \
     }                                                           \
   }
-#define jon_video_SampleToChunk_init_default { 0, 0, 0 }
+#define jon_video_SampleToChunk_init_default \
+  {                                          \
+    0, 0, 0                                  \
+  }
 #define jon_video_VideoError_init_default                                  \
   {                                                                        \
     { { NULL }, NULL }, { { NULL }, NULL }, _jon_video_VideoErrorType_MIN, \
@@ -185,20 +187,19 @@ extern "C"
       { NULL }, NULL                    \
     }                                   \
   }
-#define jon_video_VideoRangeQuery_init_zero \
-  { 0, 0, { { NULL }, NULL }, false, 0, false, 0 }
-#define jon_video_VideoMetaResponse_init_zero \
-  { { { NULL }, NULL }, { { NULL }, NULL }, 0, 0, 0, { { NULL }, NULL }, 0 }
-#define jon_video_VideoMeta_init_zero \
-  { { { NULL }, NULL },               \
-    0,                                \
-    0,                                \
-    { { NULL }, NULL },               \
-    { { NULL }, NULL },               \
-    0,                                \
-    0,                                \
-    false,                            \
-    jon_video_SampleTable_init_zero }
+#define jon_video_VideoRangeQuery_init_zero      \
+  {                                              \
+    0, 0, { { NULL }, NULL }, false, 0, false, 0 \
+  }
+#define jon_video_VideoMetaResponse_init_zero                              \
+  {                                                                        \
+    { { NULL }, NULL }, { { NULL }, NULL }, 0, 0, 0, { { NULL }, NULL }, 0 \
+  }
+#define jon_video_VideoMeta_init_zero                                       \
+  {                                                                         \
+    { { NULL }, NULL }, 0, 0, { { NULL }, NULL }, { { NULL }, NULL }, 0, 0, \
+      false, jon_video_SampleTable_init_zero                                \
+  }
 #define jon_video_SampleTable_init_zero                         \
   {                                                             \
     { { NULL }, NULL }, { { NULL }, NULL }, { { NULL }, NULL }, \
@@ -207,7 +208,10 @@ extern "C"
       { NULL }, NULL                                            \
     }                                                           \
   }
-#define jon_video_SampleToChunk_init_zero { 0, 0, 0 }
+#define jon_video_SampleToChunk_init_zero \
+  {                                       \
+    0, 0, 0                               \
+  }
 #define jon_video_VideoError_init_zero                                     \
   {                                                                        \
     { { NULL }, NULL }, { { NULL }, NULL }, _jon_video_VideoErrorType_MIN, \
