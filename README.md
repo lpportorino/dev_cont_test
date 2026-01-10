@@ -303,6 +303,26 @@ The frontend (prototype_basic) validates configs against a JSON schema. These fi
 
 ---
 
+## Deployment Configuration
+
+Configure deployment in `.env`:
+
+```bash
+DEPLOY_HOST=sych.local
+DEPLOY_USER=archer
+```
+
+Deploy to sych.local (packages served by nginx at `/osd/`):
+
+```bash
+./tools/devcontainer-build.sh deploy       # Dev builds
+./tools/devcontainer-build.sh deploy-prod  # Production builds
+```
+
+**Note:** Host's `/etc/hosts` is mounted into devcontainer for hostname resolution.
+
+---
+
 ## Integration with prototype_basic
 
 Deploy OSD packages to the video player:

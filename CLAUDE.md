@@ -94,8 +94,8 @@ This runs `bear` on all 4 variants and merges the results with `jq`, capturing a
 
 | Mode | Flags | WASM Size | Package Size | Features |
 |------|-------|-----------|--------------|----------|
-| production | `-Oz -flto -DNDEBUG` | ~640 KB | ~900 KB | Optimized, no debug, no LOG_DEBUG/INFO |
-| dev | `-O1 -g -D_FORTIFY_SOURCE=2` | ~2.9 MB | ~3 MB | Debug symbols, sanitizers, all logging |
+| production | `-Oz -flto -DNDEBUG` | ~640 KB | ~960 KB | Optimized, no debug, no LOG_DEBUG/INFO |
+| dev | `-O1 -g -D_FORTIFY_SOURCE=2` | ~2.9 MB | ~1.7 MB | Debug symbols, sanitizers, all logging |
 
 **Logging behavior**:
 - Production: `LOG_DEBUG()` and `LOG_INFO()` compile to nothing (like `assert()`)
@@ -425,7 +425,7 @@ The frontend loads OSD from signed packages (`/osd/*.tar`) and receives change n
 
 ### Notes
 
-- Dev packages (~1.4MB) include debug symbols; production (~960KB) is optimized
+- Dev packages (~1.7MB) include debug symbols; production (~960KB) is optimized
 - Gallery only uses `recording_day` variant
 - Frontend uses `live_day` + `live_thermal` for live streams
 
