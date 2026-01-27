@@ -169,7 +169,9 @@ opaque_payload_decode_callback(pb_istream_t *stream,
   cb_ctx->payload_size = stream->bytes_left;
   if (cb_ctx->payload_size > sizeof(cb_ctx->payload_buffer))
     {
-      // Payload too large, skip
+      // Payload too large, skip with warning
+      LOG_WARN("Oversized opaque payload (%zu > %zu max), skipping",
+               cb_ctx->payload_size, sizeof(cb_ctx->payload_buffer));
       cb_ctx->payload_size = 0;
       return pb_read(stream, NULL, stream->bytes_left);
     }
@@ -220,6 +222,23 @@ opaque_payloads_decode_callback(pb_istream_t *stream,
       if (pb_decode(&payload_stream, ser_OsdClientMetadata_fields,
                     &client_metadata))
         {
+          // Validate ranges to prevent overflow or division by zero
+          if (client_metadata.canvas_width_px == 0
+              || client_metadata.canvas_width_px > 40960
+              || client_metadata.canvas_height_px == 0
+              || client_metadata.canvas_height_px > 40960
+              || client_metadata.device_pixel_ratio <= 0.0f
+              || client_metadata.device_pixel_ratio > 10.0f
+              || client_metadata.device_pixel_ratio
+                   != client_metadata.device_pixel_ratio)
+            {
+              LOG_WARN("Invalid OsdClientMetadata: w=%u h=%u dpr=%f",
+                       client_metadata.canvas_width_px,
+                       client_metadata.canvas_height_px,
+                       client_metadata.device_pixel_ratio);
+              return true; // Continue processing other payloads
+            }
+
           // Store in context for variant_info to read
           ctx->client_metadata.canvas_width_px
             = client_metadata.canvas_width_px;

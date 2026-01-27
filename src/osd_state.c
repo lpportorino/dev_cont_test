@@ -169,7 +169,8 @@ bool
 osd_state_get_client_metadata(const osd_context_t *ctx,
                               osd_client_metadata_t *metadata)
 {
-  if (!metadata)
+  // Check both pointers upfront before any dereference
+  if (!metadata || !ctx)
     return false;
 
   // Initialize to invalid
@@ -180,7 +181,7 @@ osd_state_get_client_metadata(const osd_context_t *ctx,
   metadata->osd_buffer_width   = 0;
   metadata->osd_buffer_height  = 0;
 
-  if (!ctx || !ctx->client_metadata.valid)
+  if (!ctx->client_metadata.valid)
     return false;
 
   metadata->canvas_width_px    = ctx->client_metadata.canvas_width_px;
