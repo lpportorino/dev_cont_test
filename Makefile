@@ -31,12 +31,11 @@
 # Environment Detection
 #==============================================================================
 
-# Detect if running inside devcontainer:
-# 1. /workspaces directory exists (standard devcontainer mount point)
-# 2. REMOTE_CONTAINERS env var is set (VS Code Remote Containers)
-DEVCONTAINER := $(shell if [ -d "/workspaces" ] || [ -n "$$REMOTE_CONTAINERS" ]; then echo "1"; fi)
+# Detect if running inside any Docker container (/.dockerenv exists in all containers)
+# This is the same reliable detection used by the main jettison Makefile
+INSIDE_CONTAINER := $(shell [ -f /.dockerenv ] && echo 1)
 
-ifeq ($(DEVCONTAINER),1)
+ifdef INSIDE_CONTAINER
   BUILD_ENV := devcontainer
 else
   BUILD_ENV := host
@@ -69,7 +68,7 @@ WASI_SDK_PATH ?= /opt/wasi-sdk
 NATIVE_CC := gcc
 
 # Create logs directory (only in devcontainer)
-ifeq ($(DEVCONTAINER),1)
+ifdef INSIDE_CONTAINER
 $(shell mkdir -p $(LOGS_DIR))
 endif
 
@@ -162,7 +161,7 @@ _live_day:
 _live_thermal:
 	@VARIANT=live_thermal BUILD_MODE=$(BUILD_MODE) ./tools/build.sh 2>&1 | tee $(LOGS_DIR)/build_live_thermal.log
 
-ifeq ($(DEVCONTAINER),1)
+ifdef INSIDE_CONTAINER
 # --- Devcontainer: Build all 4 variants in parallel ---
 # Clean WASM files first to ensure no stale binaries can be packaged
 all: quality
@@ -196,7 +195,7 @@ _live_day_dev:
 _live_thermal_dev:
 	@VARIANT=live_thermal BUILD_MODE=dev ./tools/build.sh 2>&1 | tee $(LOGS_DIR)/build_live_thermal_dev.log
 
-ifeq ($(DEVCONTAINER),1)
+ifdef INSIDE_CONTAINER
 # --- Devcontainer: Build all 4 dev variants in parallel ---
 # Clean WASM files first to ensure no stale binaries can be packaged
 all-dev: quality
@@ -223,7 +222,7 @@ package: recording_day
 	@echo ""
 	@ls -lh $(DIST_DIR)/*.tar 2>/dev/null || true
 
-ifeq ($(DEVCONTAINER),1)
+ifdef INSIDE_CONTAINER
 package-all: all
 	@echo "=== Packaging all 4 variants ==="
 	@rm -f $(DIST_DIR)/jettison-osd-*.tar
@@ -247,7 +246,7 @@ package-dev: recording_day_dev
 	@echo ""
 	@ls -lh $(DIST_DIR)/*-dev.tar 2>/dev/null || true
 
-ifeq ($(DEVCONTAINER),1)
+ifdef INSIDE_CONTAINER
 package-all-dev: all-dev
 	@echo "=== Packaging all 4 variants (dev) ==="
 	@rm -f $(DIST_DIR)/*-dev.tar
@@ -271,7 +270,7 @@ endif
 -include .env
 export
 
-ifeq ($(DEVCONTAINER),1)
+ifdef INSIDE_CONTAINER
 # --- Devcontainer: Deploy dev builds ---
 # Always clean-builds to ensure no stale artifacts
 deploy: clean-artifacts package-all-dev
@@ -338,7 +337,7 @@ png: recording_day png-harness
 	@cp $(SNAPSHOT_DIR)/osd_render.png $(DIST_DIR)/recording_day.png 2>/dev/null || true
 	@echo "Output: $(DIST_DIR)/recording_day.png"
 
-ifeq ($(DEVCONTAINER),1)
+ifdef INSIDE_CONTAINER
 png-all: all png-harness
 	@echo "=== Generating all PNG snapshots ==="
 	@mkdir -p $(SNAPSHOT_DIR) $(DIST_DIR)
@@ -358,7 +357,7 @@ video-harness:
 	@echo "=== Building video harness ==="
 	@$(MAKE) -C test/video_harness clean all BUILD_MODE=production
 
-ifeq ($(DEVCONTAINER),1)
+ifdef INSIDE_CONTAINER
 video: all video-harness
 	@echo "=== Generating videos for all 4 variants ==="
 	@mkdir -p test/output
@@ -384,7 +383,7 @@ video-all: all-modes video-harness
 # Proto Targets
 #==============================================================================
 
-ifeq ($(DEVCONTAINER),1)
+ifdef INSIDE_CONTAINER
 proto:
 	@echo "=== Updating proto submodules ==="
 	git submodule update --remote --merge proto/c proto/ts
@@ -403,7 +402,7 @@ endif
 # CI Targets (Full Pipeline)
 #==============================================================================
 
-ifeq ($(DEVCONTAINER),1)
+ifdef INSIDE_CONTAINER
 # Build all 8 variants (4 production + 4 dev) in parallel
 # Clean WASM files first to ensure no stale binaries can be packaged
 all-modes: quality
@@ -436,7 +435,7 @@ png-all-modes: all-modes png-harness
 	@echo ""
 	@ls -lh $(DIST_DIR)/*.png 2>/dev/null || true
 
-ifeq ($(DEVCONTAINER),1)
+ifdef INSIDE_CONTAINER
 ci: proto all-modes png-all-modes video-all
 	@echo ""
 	@echo "=============================================="
@@ -497,7 +496,7 @@ help:
 	@echo "Jettison WASM OSD - Build System"
 	@echo ""
 	@echo "Build Environment: $(BUILD_ENV)"
-ifeq ($(DEVCONTAINER),1)
+ifdef INSIDE_CONTAINER
 	@echo "  Running inside devcontainer - direct compilation"
 else
 	@echo "  Running on host - delegates to ./tools/devcontainer-build.sh"
