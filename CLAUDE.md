@@ -341,8 +341,8 @@ The inner `.tar.gz` contains these files with **exact names**:
 
 **Toolchain** (`.devcontainer/Dockerfile`):
 - Ubuntu 22.04
-- WASI SDK 20
-- Wasmtime v27.0.0 + C API
+- WASI SDK 29 (LLVM 21.1)
+- Wasmtime v41.0.1 + C API
 - GStreamer 1.0
 - Node.js 20 + TypeScript
 - clang-format + clang-tidy

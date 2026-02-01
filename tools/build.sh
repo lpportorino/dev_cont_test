@@ -73,6 +73,10 @@ HARDENING_FLAGS=""
 # These warnings catch unused functions, variables, and unreachable code
 DEAD_CODE_FLAGS="-Wunused-function -Wunused-variable -Wunused-but-set-variable"
 
+# Extra warnings (Clang-compatible)
+# Note: -Wformat-truncation/-Wformat-overflow are GCC-only, not available in Clang
+EXTRA_WARNINGS=""
+
 case "$BUILD_MODE" in
   dev)
     echo "Building in DEVELOPMENT mode (debugging + hardening)"
@@ -80,7 +84,7 @@ case "$BUILD_MODE" in
     OUTPUT_SUFFIX="_dev"
 
     # WASM-compatible hardening flags (ALWAYS enabled in dev)
-    # Note: UBSan not available in WASI SDK 20 (missing runtime library)
+    # Note: UBSan still not available in WASI SDK 29 (missing runtime library)
     HARDENING_FLAGS="-D_FORTIFY_SOURCE=2 -fstack-protector-strong"
 
     echo "  + Optimization: -O1 (debug-friendly)"
@@ -89,7 +93,6 @@ case "$BUILD_MODE" in
     echo "  + Stack canaries: stack-protector-strong"
     echo ""
     echo "  ⚠️  This build will TRAP on buffer overflows!"
-    echo "  Note: UBSan not available (WASI SDK limitation)"
     echo ""
 
     ;;
@@ -192,6 +195,7 @@ for c_file in $C_FILES; do
     $OPTIMIZATION \
     $HARDENING_FLAGS \
     $DEAD_CODE_FLAGS \
+    $EXTRA_WARNINGS \
     -DWASI_BUILD \
     $VARIANT_DEFINES \
     $VERSION_DEFINES \
@@ -216,6 +220,7 @@ for c_file in $PROTO_FILES; do
     $OPTIMIZATION \
     $HARDENING_FLAGS \
     $DEAD_CODE_FLAGS \
+    $EXTRA_WARNINGS \
     -DWASI_BUILD \
     $VARIANT_DEFINES \
     $VERSION_DEFINES \

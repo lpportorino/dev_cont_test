@@ -29,6 +29,9 @@ WarningsAsErrors: '*'
 HeaderFilterRegex: '^(?!.*vendor/).*'
 
 CheckOptions:
+  # Report more unsafe libc functions (LLVM 17+)
+  - key: bugprone-unsafe-functions.ReportMoreUnsafeFunctions
+    value: 'true'
   - key: readability-function-size.LineThreshold
     value: '200'
   - key: readability-function-size.StatementThreshold

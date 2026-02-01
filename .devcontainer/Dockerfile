@@ -59,16 +59,16 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # =============================================================================
-# WASI SDK 20 - WebAssembly compilation toolchain
+# WASI SDK 29 - WebAssembly compilation toolchain (LLVM 21.1)
 # =============================================================================
-ENV WASI_VERSION=20
+ENV WASI_VERSION=29
 ENV WASI_VERSION_FULL=${WASI_VERSION}.0
 ENV WASI_SDK_PATH=/opt/wasi-sdk
 
-RUN wget -q https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_VERSION}/wasi-sdk-${WASI_VERSION_FULL}-linux.tar.gz \
-    && tar xzf wasi-sdk-${WASI_VERSION_FULL}-linux.tar.gz \
-    && mv wasi-sdk-${WASI_VERSION_FULL} ${WASI_SDK_PATH} \
-    && rm wasi-sdk-${WASI_VERSION_FULL}-linux.tar.gz
+RUN wget -q https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_VERSION}/wasi-sdk-${WASI_VERSION_FULL}-x86_64-linux.tar.gz \
+    && tar xzf wasi-sdk-${WASI_VERSION_FULL}-x86_64-linux.tar.gz \
+    && mv wasi-sdk-${WASI_VERSION_FULL}-x86_64-linux ${WASI_SDK_PATH} \
+    && rm wasi-sdk-${WASI_VERSION_FULL}-x86_64-linux.tar.gz
 
 ENV PATH="${WASI_SDK_PATH}/bin:${PATH}"
 
@@ -92,9 +92,9 @@ RUN git clone --depth 1 --branch 2.3.0 https://github.com/pboettch/json-schema-v
     && rm -rf /tmp/json-schema-validator
 
 # =============================================================================
-# Wasmtime v27.0.0 - WebAssembly runtime + C API
+# Wasmtime v41.0.1 - WebAssembly runtime + C API
 # =============================================================================
-ENV WASMTIME_VERSION=v27.0.0
+ENV WASMTIME_VERSION=v41.0.1
 
 RUN wget -q https://github.com/bytecodealliance/wasmtime/releases/download/${WASMTIME_VERSION}/wasmtime-${WASMTIME_VERSION}-x86_64-linux.tar.xz \
     && tar xf wasmtime-${WASMTIME_VERSION}-x86_64-linux.tar.xz \
