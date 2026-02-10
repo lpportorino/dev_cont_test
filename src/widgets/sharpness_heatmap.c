@@ -96,13 +96,26 @@ sharpness_heatmap_render(osd_context_t *ctx, const osd_state_t *state)
   if (count > 64)
     count = 64;
 
+  // Min-max normalize so relative differences always produce visible gradient
+  float min_val = data.grid_8x8[0], max_val = data.grid_8x8[0];
+  for (int i = 1; i < count; i++)
+    {
+      if (data.grid_8x8[i] < min_val)
+        min_val = data.grid_8x8[i];
+      if (data.grid_8x8[i] > max_val)
+        max_val = data.grid_8x8[i];
+    }
+  float range = max_val - min_val;
+
   for (int i = 0; i < count; i++)
     {
-      int row    = i / HEATMAP_GRID_SIZE;
-      int col    = i % HEATMAP_GRID_SIZE;
-      int cx     = x0 + col * cell_size;
-      int cy     = y0 + row * cell_size;
-      uint32_t c = sharpness_to_color(data.grid_8x8[i]);
+      int row = i / HEATMAP_GRID_SIZE;
+      int col = i % HEATMAP_GRID_SIZE;
+      int cx  = x0 + col * cell_size;
+      int cy  = y0 + row * cell_size;
+      float norm
+        = (range > 0.001f) ? (data.grid_8x8[i] - min_val) / range : 0.5f;
+      uint32_t c = sharpness_to_color(norm);
       draw_rect_filled(&fb, cx, cy, cell_size, cell_size, c);
     }
 

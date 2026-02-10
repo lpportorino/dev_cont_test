@@ -74,8 +74,8 @@
   },
   "sharpness_heatmap": {
     "enabled": true,
-    "position_x": 825,
-    "position_y": 645,
+    "position_x": 418,
+    "position_y": 648,
     "cell_size": 8,
     "show_label": true,
     "label_font_size": 12

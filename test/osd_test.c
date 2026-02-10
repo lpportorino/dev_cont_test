@@ -1,6 +1,7 @@
 // PNG Test Harness for OSD WASM Module
 // Uses Wasmtime C API to load and execute osd.wasm, then saves framebuffer as PNG
 
+#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,7 +16,319 @@
 // Wasmtime C API
 #include <wasmtime.h>
 
+// Nanopb encoding for synthetic protobuf state
+#include "jon_shared_data.pb.h"
+#include "jon_shared_data_types.pb.h"
+#include "opaque/cv_meta.pb.h"
+#include "opaque/detection_common.pb.h"
+#include "opaque/object_detections_day.pb.h"
+#include "opaque/object_detections_heat.pb.h"
+#include "pb_encode.h"
+
 #define OUTPUT_PNG "snapshot/osd_render.png"
+
+// Opaque payload UUIDs (must match osd_plugin.c)
+#define CV_META_UUID "019c3e33-d52d-7552-b36b-6fdcaa5d59b8"
+#define OBJECT_DETECTIONS_DAY_UUID "019c40f6-825c-7f4c-8284-ddad4375ed9b"
+#define OBJECT_DETECTIONS_HEAT_UUID "019c40f6-825d-7e0e-9893-87c7b167a751"
+
+/* ============================================================
+ * Nanopb encoding callbacks for CALLBACK fields
+ * ============================================================ */
+
+// Encode a SINGULAR STRING callback field
+static bool
+encode_string_cb (pb_ostream_t *stream,
+                  const pb_field_t *field,
+                  void *const *arg)
+{
+  const char *str = (const char *)*arg;
+  if (!pb_encode_tag_for_field (stream, field))
+    return false;
+  return pb_encode_string (stream, (const pb_byte_t *)str, strlen (str));
+}
+
+// Context for encoding a SINGULAR BYTES callback field
+typedef struct
+{
+  const uint8_t *data;
+  size_t size;
+} bytes_ctx_t;
+
+static bool
+encode_bytes_cb (pb_ostream_t *stream,
+                 const pb_field_t *field,
+                 void *const *arg)
+{
+  const bytes_ctx_t *ctx = (const bytes_ctx_t *)*arg;
+  if (!pb_encode_tag_for_field (stream, field))
+    return false;
+  return pb_encode_string (stream, ctx->data, ctx->size);
+}
+
+// Context for encoding a REPEATED FLOAT callback field
+typedef struct
+{
+  const float *values;
+  int count;
+} float_array_ctx_t;
+
+static bool
+encode_float_array_cb (pb_ostream_t *stream,
+                       const pb_field_t *field,
+                       void *const *arg)
+{
+  const float_array_ctx_t *ctx = (const float_array_ctx_t *)*arg;
+  for (int i = 0; i < ctx->count; i++)
+    {
+      if (!pb_encode_tag_for_field (stream, field))
+        return false;
+      if (!pb_encode_fixed32 (stream, &ctx->values[i]))
+        return false;
+    }
+  return true;
+}
+
+// Context for encoding REPEATED MESSAGE (ObjectDetection) callback field
+typedef struct
+{
+  const ser_ObjectDetection *items;
+  int count;
+} det_array_ctx_t;
+
+static bool
+encode_detections_cb (pb_ostream_t *stream,
+                      const pb_field_t *field,
+                      void *const *arg)
+{
+  const det_array_ctx_t *ctx = (const det_array_ctx_t *)*arg;
+  for (int i = 0; i < ctx->count; i++)
+    {
+      if (!pb_encode_tag_for_field (stream, field))
+        return false;
+      if (!pb_encode_submessage (stream, ser_ObjectDetection_fields,
+                                 &ctx->items[i]))
+        return false;
+    }
+  return true;
+}
+
+// Context for encoding REPEATED MESSAGE (JonOpaquePayload) on JonGUIState
+typedef struct
+{
+  ser_JonOpaquePayload *payloads;
+  int count;
+} opaque_array_ctx_t;
+
+static bool
+encode_opaque_payloads_cb (pb_ostream_t *stream,
+                           const pb_field_t *field,
+                           void *const *arg)
+{
+  const opaque_array_ctx_t *ctx = (const opaque_array_ctx_t *)*arg;
+  for (int i = 0; i < ctx->count; i++)
+    {
+      if (!pb_encode_tag_for_field (stream, field))
+        return false;
+      if (!pb_encode_submessage (stream, ser_JonOpaquePayload_fields,
+                                 &ctx->payloads[i]))
+        return false;
+    }
+  return true;
+}
+
+/* ============================================================
+ * Synthetic state builder
+ * ============================================================ */
+
+// Build a full JonGUIState with synthetic CV data and YOLO detections.
+// Returns pointer to static buffer; caller must not free.
+static uint8_t *
+build_synthetic_state (const char *variant_name, size_t *out_size)
+{
+  bool is_day = (strstr (variant_name, "day") != NULL);
+
+  printf ("Building synthetic state (variant=%s, is_day=%d)...\n",
+          variant_name, is_day);
+
+  /* --- Inner payload 1: CvMeta (sharpness) --- */
+  float level3[64];
+  for (int row = 0; row < 8; row++)
+    {
+      for (int col = 0; col < 8; col++)
+        {
+          float cy = (row - 3.5f) / 3.5f;
+          float cx = (col - 3.5f) / 3.5f;
+          float dist = sqrtf (cx * cx + cy * cy);
+          // Radial gradient: sharp center (0.9), blurry edges (0.2)
+          level3[row * 8 + col] = fmaxf (0.1f, 0.95f - dist * 0.75f);
+        }
+    }
+
+  float_array_ctx_t level3_ctx = { .values = level3, .count = 64 };
+
+  ser_CvMeta cv_meta = ser_CvMeta_init_zero;
+  cv_meta.capture_monotonic_us = 1000000;
+  cv_meta.updated_sources = 0x1F;
+
+  if (is_day)
+    {
+      cv_meta.has_channel_day = true;
+      cv_meta.channel_day.sharpness_level0 = 0.72f;
+      cv_meta.channel_day.sharpness_valid = true;
+      cv_meta.channel_day.sharpness_level3.funcs.encode
+          = encode_float_array_cb;
+      cv_meta.channel_day.sharpness_level3.arg = &level3_ctx;
+    }
+  else
+    {
+      cv_meta.has_channel_heat = true;
+      cv_meta.channel_heat.sharpness_level0 = 0.68f;
+      cv_meta.channel_heat.sharpness_valid = true;
+      cv_meta.channel_heat.sharpness_level3.funcs.encode
+          = encode_float_array_cb;
+      cv_meta.channel_heat.sharpness_level3.arg = &level3_ctx;
+    }
+
+  uint8_t cv_buf[2048];
+  pb_ostream_t cv_stream = pb_ostream_from_buffer (cv_buf, sizeof (cv_buf));
+  if (!pb_encode (&cv_stream, ser_CvMeta_fields, &cv_meta))
+    {
+      fprintf (stderr, "error: CvMeta encode failed: %s\n",
+               PB_GET_ERROR (&cv_stream));
+      return NULL;
+    }
+  printf ("  CvMeta: %zu bytes\n", cv_stream.bytes_written);
+
+  /* --- Inner payload 2: ObjectDetections (YOLO) --- */
+  ser_ObjectDetection dets[] = {
+    // Person walking left-center (class 0)
+    { .x1 = -0.55f, .y1 = -0.25f, .x2 = -0.30f, .y2 = 0.55f,
+      .confidence = 0.92f, .class_id = 0 },
+    // Car on the right (class 2)
+    { .x1 = 0.20f, .y1 = 0.05f, .x2 = 0.70f, .y2 = 0.40f,
+      .confidence = 0.87f, .class_id = 2 },
+    // Dog near bottom-center (class 16)
+    { .x1 = -0.12f, .y1 = 0.30f, .x2 = 0.18f, .y2 = 0.60f,
+      .confidence = 0.78f, .class_id = 16 },
+    // Bird in upper area (class 14)
+    { .x1 = 0.40f, .y1 = -0.70f, .x2 = 0.55f, .y2 = -0.50f,
+      .confidence = 0.65f, .class_id = 14 },
+    // Bicycle at far left (class 1)
+    { .x1 = -0.90f, .y1 = 0.10f, .x2 = -0.60f, .y2 = 0.50f,
+      .confidence = 0.81f, .class_id = 1 },
+  };
+  int num_dets = sizeof (dets) / sizeof (dets[0]);
+  det_array_ctx_t det_encode_ctx = { .items = dets, .count = num_dets };
+
+  uint8_t det_buf[4096];
+  pb_ostream_t det_stream
+      = pb_ostream_from_buffer (det_buf, sizeof (det_buf));
+
+  if (is_day)
+    {
+      ser_ObjectDetectionsDay det_msg = ser_ObjectDetectionsDay_init_zero;
+      det_msg.status = ser_DetectionStatus_DETECTION_STATUS_OK;
+      det_msg.latency_ns = 5000000;
+      det_msg.capture_monotonic_us = 1000000;
+      det_msg.detections.funcs.encode = encode_detections_cb;
+      det_msg.detections.arg = &det_encode_ctx;
+      if (!pb_encode (&det_stream, ser_ObjectDetectionsDay_fields, &det_msg))
+        {
+          fprintf (stderr, "error: ObjectDetectionsDay encode failed: %s\n",
+                   PB_GET_ERROR (&det_stream));
+          return NULL;
+        }
+    }
+  else
+    {
+      ser_ObjectDetectionsHeat det_msg = ser_ObjectDetectionsHeat_init_zero;
+      det_msg.status = ser_DetectionStatus_DETECTION_STATUS_OK;
+      det_msg.latency_ns = 5000000;
+      det_msg.capture_monotonic_us = 1000000;
+      det_msg.detections.funcs.encode = encode_detections_cb;
+      det_msg.detections.arg = &det_encode_ctx;
+      if (!pb_encode (&det_stream, ser_ObjectDetectionsHeat_fields, &det_msg))
+        {
+          fprintf (stderr, "error: ObjectDetectionsHeat encode failed: %s\n",
+                   PB_GET_ERROR (&det_stream));
+          return NULL;
+        }
+    }
+  printf ("  ObjectDetections: %zu bytes (%d targets)\n",
+          det_stream.bytes_written, num_dets);
+
+  /* --- Wrap inner payloads in JonOpaquePayload --- */
+  bytes_ctx_t cv_payload = { .data = cv_buf,
+                             .size = cv_stream.bytes_written };
+  bytes_ctx_t det_payload = { .data = det_buf,
+                              .size = det_stream.bytes_written };
+
+  ser_JonOpaquePayload opaques[2];
+
+  // CvMeta opaque payload
+  opaques[0] = (ser_JonOpaquePayload)ser_JonOpaquePayload_init_zero;
+  opaques[0].type_uuid.funcs.encode = encode_string_cb;
+  opaques[0].type_uuid.arg = (void *)CV_META_UUID;
+  opaques[0].payload.funcs.encode = encode_bytes_cb;
+  opaques[0].payload.arg = &cv_payload;
+
+  // ObjectDetections opaque payload
+  opaques[1] = (ser_JonOpaquePayload)ser_JonOpaquePayload_init_zero;
+  opaques[1].type_uuid.funcs.encode = encode_string_cb;
+  opaques[1].type_uuid.arg
+      = (void *)(is_day ? OBJECT_DETECTIONS_DAY_UUID
+                        : OBJECT_DETECTIONS_HEAT_UUID);
+  opaques[1].payload.funcs.encode = encode_bytes_cb;
+  opaques[1].payload.arg = &det_payload;
+
+  opaque_array_ctx_t opaque_ctx = { .payloads = opaques, .count = 2 };
+
+  /* --- Build full JonGUIState --- */
+  ser_JonGUIState state = ser_JonGUIState_init_zero;
+  state.system_monotonic_time_us = 1000000;
+
+  state.has_compass = true;
+  state.compass.azimuth = 180.0;
+  state.compass.elevation = 0.0;
+  state.compass.bank = 0.0;
+
+  state.has_rotary = true;
+  state.rotary.azimuth_speed = 0.0;
+  state.rotary.elevation_speed = 0.0;
+  state.rotary.is_moving = false;
+
+  state.has_time = true;
+  state.time.timestamp = 1736294400; // 2025-01-08 00:00:00 UTC
+
+  state.has_actual_space_time = true;
+  state.actual_space_time.latitude = 37.7749;
+  state.actual_space_time.longitude = -122.4194;
+  state.actual_space_time.altitude = 0.0;
+  state.actual_space_time.timestamp = 1736294400;
+  state.actual_space_time.azimuth = 180.0;
+  state.actual_space_time.elevation = 0.0;
+  state.actual_space_time.bank = 0.0;
+
+  // Wire opaque payloads
+  state.opaque_payloads.funcs.encode = encode_opaque_payloads_cb;
+  state.opaque_payloads.arg = &opaque_ctx;
+
+  /* --- Encode to buffer --- */
+  static uint8_t state_buf[16384];
+  pb_ostream_t state_stream
+      = pb_ostream_from_buffer (state_buf, sizeof (state_buf));
+  if (!pb_encode (&state_stream, ser_JonGUIState_fields, &state))
+    {
+      fprintf (stderr, "error: JonGUIState encode failed: %s\n",
+               PB_GET_ERROR (&state_stream));
+      return NULL;
+    }
+
+  *out_size = state_stream.bytes_written;
+  printf ("  JonGUIState: %zu bytes (2 opaque payloads)\n", *out_size);
+  return state_buf;
+}
 
 typedef struct {
   const char *name;
@@ -305,9 +618,8 @@ main(int argc, char *argv[])
     }
   printf("✓ Initialized successfully\n");
 
-  // Load protobuf snapshot and update OSD state
-  const char *proto_path = "test/proto_snapshot.bin";
-  printf("Loading protobuf snapshot: %s\n", proto_path);
+  // Build synthetic protobuf state with CV data and YOLO detections
+  printf("Building synthetic protobuf state...\n");
 
   // Variables for protobuf (needed for benchmark later)
   uint32_t proto_ptr = 0;
@@ -315,78 +627,53 @@ main(int argc, char *argv[])
   bool proto_loaded = false;
   wasmtime_extern_t update_state_extern;
 
-  FILE *proto_file = fopen(proto_path, "rb");
-  if (proto_file)
+  size_t synthetic_size = 0;
+  uint8_t *proto_data
+      = build_synthetic_state (variant->name, &synthetic_size);
+
+  if (proto_data && synthetic_size > 0)
     {
-      // Get file size
-      fseek(proto_file, 0L, SEEK_END);
-      size_t proto_file_size = ftell(proto_file);
-      fseek(proto_file, 0L, SEEK_SET);
-      proto_size = proto_file_size;
-
-      printf("  Protobuf size: %u bytes\n", proto_size);
-
-      // Allocate buffer and read
-      uint8_t *proto_data = (uint8_t *)malloc(proto_size);
-      if (!proto_data)
-        {
-          fprintf(stderr, "error: failed to allocate proto buffer\n");
-          fclose(proto_file);
-          return 1;
-        }
-
-      if (fread(proto_data, 1, proto_size, proto_file) != proto_size)
-        {
-          fprintf(stderr, "error: failed to read proto file\n");
-          free(proto_data);
-          fclose(proto_file);
-          return 1;
-        }
-      fclose(proto_file);
+      proto_size = (uint32_t)synthetic_size;
+      printf ("  Synthetic state: %u bytes\n", proto_size);
 
       // Get WASM memory export
       wasmtime_extern_t memory_extern;
-      if (!wasmtime_instance_export_get(context, &instance, "memory",
-                                         strlen("memory"), &memory_extern))
+      if (!wasmtime_instance_export_get (context, &instance, "memory",
+                                         strlen ("memory"), &memory_extern))
         {
-          fprintf(stderr, "error: failed to find memory export\n");
-          free(proto_data);
+          fprintf (stderr, "error: failed to find memory export\n");
           return 1;
         }
 
       wasmtime_memory_t *memory = &memory_extern.of.memory;
-      uint8_t *memory_data = wasmtime_memory_data(context, memory);
-      size_t memory_size = wasmtime_memory_data_size(context, memory);
+      uint8_t *memory_data = wasmtime_memory_data (context, memory);
+      size_t memory_size = wasmtime_memory_data_size (context, memory);
 
-      // Find a safe location in WASM memory to copy proto data
-      // Framebuffer is 1920*1080*4 = 8,294,400 bytes (~8.3MB)
-      // Place proto at 9MB offset to avoid overlap
-      proto_ptr = 0x900000; // 9MB offset (safe beyond framebuffer)
+      // Place proto at 9MB offset (safe beyond framebuffer)
+      proto_ptr = 0x900000;
       if (proto_ptr + proto_size > memory_size)
         {
-          fprintf(stderr,
-                  "error: not enough WASM memory for proto data\n");
-          free(proto_data);
+          fprintf (stderr,
+                   "error: not enough WASM memory for proto data\n");
           return 1;
         }
 
       // Copy proto data into WASM memory
-      memcpy(memory_data + proto_ptr, proto_data, proto_size);
-      free(proto_data);
-      printf("  ✓ Protobuf copied to WASM memory at 0x%08x\n", proto_ptr);
+      memcpy (memory_data + proto_ptr, proto_data, proto_size);
+      printf ("  Copied to WASM memory at 0x%08x\n", proto_ptr);
 
       // Get wasm_osd_update_state export
-      if (!wasmtime_instance_export_get(
+      if (!wasmtime_instance_export_get (
               context, &instance, "wasm_osd_update_state",
-              strlen("wasm_osd_update_state"), &update_state_extern))
+              strlen ("wasm_osd_update_state"), &update_state_extern))
         {
-          fprintf(stderr,
-                  "error: failed to find wasm_osd_update_state export\n");
+          fprintf (stderr,
+                   "error: failed to find wasm_osd_update_state export\n");
           return 1;
         }
 
       // Call wasm_osd_update_state(proto_ptr, proto_size)
-      printf("Calling wasm_osd_update_state()...\n");
+      printf ("Calling wasm_osd_update_state()...\n");
       wasmtime_val_t update_args[2];
       update_args[0].kind = WASMTIME_I32;
       update_args[0].of.i32 = proto_ptr;
@@ -394,22 +681,23 @@ main(int argc, char *argv[])
       update_args[1].of.i32 = proto_size;
 
       wasmtime_val_t update_results[1];
-      error = wasmtime_func_call(context, &update_state_extern.of.func,
-                                  update_args, 2, update_results, 1, &trap);
+      error = wasmtime_func_call (context, &update_state_extern.of.func,
+                                   update_args, 2, update_results, 1, &trap);
       if (error != NULL || trap != NULL)
         {
-          exit_with_error("failed to call wasm_osd_update_state", error,
-                          trap);
+          exit_with_error ("failed to call wasm_osd_update_state", error,
+                           trap);
         }
 
-      printf("  ✓ State updated (returned: %d)\n",
-             update_results[0].of.i32);
+      printf ("  State updated (returned: %d)\n",
+              update_results[0].of.i32);
 
       proto_loaded = true;
     }
   else
     {
-      printf("  ⚠️  Protobuf snapshot not found, rendering with defaults\n");
+      printf ("  Failed to build synthetic state, rendering with "
+              "defaults\n");
     }
 
   // Call wasm_osd_render() and measure performance

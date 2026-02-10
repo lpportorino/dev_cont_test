@@ -316,12 +316,21 @@ deploy-gallery-prod: package
 harness: png-harness video-harness
 	@echo "=== All test harnesses built ==="
 
+# Nanopb sources for PNG harness protobuf encoding
+PROTO_DIR = $(PROJECT_ROOT)/src/proto
+NANOPB_ENCODE_SRCS = $(PROTO_DIR)/pb_common.c \
+                     $(PROTO_DIR)/pb_encode.c \
+                     $(wildcard $(PROTO_DIR)/jon_shared_data*.pb.c) \
+                     $(wildcard $(PROTO_DIR)/opaque/*.pb.c)
+
 png-harness:
 	@echo "=== Building PNG harness ==="
 	@mkdir -p $(BUILD_DIR)
 	@$(NATIVE_CC) -o $(BUILD_DIR)/png_harness \
 		$(PROJECT_ROOT)/test/osd_test.c \
+		$(NANOPB_ENCODE_SRCS) \
 		-I$(PROJECT_ROOT)/vendor \
+		-I$(PROJECT_ROOT)/src/proto \
 		-I/usr/local/include \
 		-L/usr/local/lib \
 		-Wl,-rpath,/usr/local/lib \
