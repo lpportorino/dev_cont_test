@@ -16,6 +16,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+// Maximum number of YOLO detections stored per frame
+#define OSD_MAX_DETECTIONS 64
+
 // ════════════════════════════════════════════════════════════
 // OSD CONTEXT
 // ════════════════════════════════════════════════════════════
@@ -59,7 +62,7 @@ typedef struct osd_context
   // ──────────────────────────────────────────────────────────
 
   // Proto buffer (internal - use osd_state.h accessors instead)
-  uint8_t proto_buffer[4096];
+  uint8_t proto_buffer[16384];
   size_t proto_size;
   bool proto_valid;
 
@@ -85,6 +88,29 @@ typedef struct osd_context
     float theme_lightness;
     bool valid;
   } client_metadata;
+
+  // CV Meta (sharpness data from CvMeta opaque payload)
+  struct
+  {
+    float sharpness_level0;     // Global score [0.0-1.0]
+    float sharpness_level3[64]; // 8x8 grid, row-major [0.0-1.0]
+    int sharpness_level3_count; // Valid cells (should be 64)
+    bool sharpness_valid;
+  } cv_meta;
+
+  // YOLO detections (from ObjectDetections opaque payload)
+  struct
+  {
+    struct
+    {
+      float x1, y1, x2, y2; // NDC [-1.0, 1.0]
+      float confidence;
+      int class_id;
+    } items[OSD_MAX_DETECTIONS];
+    int count;
+    int status; // ser_DetectionStatus enum
+    bool valid;
+  } detections;
 
   // Nav ball state
   bool navball_enabled;

@@ -98,50 +98,17 @@ extern "C"
       cmd_PMU_Start_init_default  \
     }                             \
   }
-#define cmd_PMU_Start_init_default \
-  {                                \
-    0                              \
-  }
-#define cmd_PMU_Stop_init_default \
-  {                               \
-    0                             \
-  }
-#define cmd_PMU_TurnOn_init_default \
-  {                                 \
-    0                               \
-  }
-#define cmd_PMU_TurnOff_init_default \
-  {                                  \
-    0                                \
-  }
-#define cmd_PMU_GetMeteo_init_default \
-  {                                   \
-    0                                 \
-  }
-#define cmd_PMU_GetHeaterPowerState_init_default \
-  {                                              \
-    0                                            \
-  }
-#define cmd_PMU_PowerOff_init_default \
-  {                                   \
-    0                                 \
-  }
-#define cmd_PMU_ChargeEnable_init_default \
-  {                                       \
-    0                                     \
-  }
-#define cmd_PMU_ChargeDisable_init_default \
-  {                                        \
-    0                                      \
-  }
-#define cmd_PMU_BootHeater_init_default \
-  {                                     \
-    0                                   \
-  }
-#define cmd_PMU_GetDataU1_init_default \
-  {                                    \
-    0                                  \
-  }
+#define cmd_PMU_Start_init_default { 0 }
+#define cmd_PMU_Stop_init_default { 0 }
+#define cmd_PMU_TurnOn_init_default { 0 }
+#define cmd_PMU_TurnOff_init_default { 0 }
+#define cmd_PMU_GetMeteo_init_default { 0 }
+#define cmd_PMU_GetHeaterPowerState_init_default { 0 }
+#define cmd_PMU_PowerOff_init_default { 0 }
+#define cmd_PMU_ChargeEnable_init_default { 0 }
+#define cmd_PMU_ChargeDisable_init_default { 0 }
+#define cmd_PMU_BootHeater_init_default { 0 }
+#define cmd_PMU_GetDataU1_init_default { 0 }
 #define cmd_PMU_Root_init_zero \
   {                            \
     0,                         \
@@ -149,50 +116,17 @@ extern "C"
       cmd_PMU_Start_init_zero  \
     }                          \
   }
-#define cmd_PMU_Start_init_zero \
-  {                             \
-    0                           \
-  }
-#define cmd_PMU_Stop_init_zero \
-  {                            \
-    0                          \
-  }
-#define cmd_PMU_TurnOn_init_zero \
-  {                              \
-    0                            \
-  }
-#define cmd_PMU_TurnOff_init_zero \
-  {                               \
-    0                             \
-  }
-#define cmd_PMU_GetMeteo_init_zero \
-  {                                \
-    0                              \
-  }
-#define cmd_PMU_GetHeaterPowerState_init_zero \
-  {                                           \
-    0                                         \
-  }
-#define cmd_PMU_PowerOff_init_zero \
-  {                                \
-    0                              \
-  }
-#define cmd_PMU_ChargeEnable_init_zero \
-  {                                    \
-    0                                  \
-  }
-#define cmd_PMU_ChargeDisable_init_zero \
-  {                                     \
-    0                                   \
-  }
-#define cmd_PMU_BootHeater_init_zero \
-  {                                  \
-    0                                \
-  }
-#define cmd_PMU_GetDataU1_init_zero \
-  {                                 \
-    0                               \
-  }
+#define cmd_PMU_Start_init_zero { 0 }
+#define cmd_PMU_Stop_init_zero { 0 }
+#define cmd_PMU_TurnOn_init_zero { 0 }
+#define cmd_PMU_TurnOff_init_zero { 0 }
+#define cmd_PMU_GetMeteo_init_zero { 0 }
+#define cmd_PMU_GetHeaterPowerState_init_zero { 0 }
+#define cmd_PMU_PowerOff_init_zero { 0 }
+#define cmd_PMU_ChargeEnable_init_zero { 0 }
+#define cmd_PMU_ChargeDisable_init_zero { 0 }
+#define cmd_PMU_BootHeater_init_zero { 0 }
+#define cmd_PMU_GetDataU1_init_zero { 0 }
 
 /* Field tags (for use in manual encoding/decoding) */
 #define cmd_PMU_Root_start_tag 1

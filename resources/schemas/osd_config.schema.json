@@ -4,7 +4,7 @@
   "title": "OSD Configuration Schema",
   "description": "JSON Schema for Jettison OSD configuration (Draft-07). Note: Some runtime values like crosshair offset (offset_x/offset_y) come from protobuf state, not this config - see rec_osd.day_crosshair_offset_* and heat_crosshair_offset_* fields.",
   "type": "object",
-  "required": ["crosshair", "timestamp", "speed_indicators", "variant_info", "navball", "celestial_indicators"],
+  "required": ["crosshair", "timestamp", "speed_indicators", "variant_info", "navball", "celestial_indicators", "sharpness_heatmap", "detections"],
   "properties": {
     "crosshair": {
       "type": "object",
@@ -245,6 +245,60 @@
           "title": "Moon Back SVG",
           "description": "Path to moon back hemisphere SVG",
           "x-ui-hidden": true
+        }
+      }
+    },
+    "sharpness_heatmap": {
+      "type": "object",
+      "title": "Sharpness Heatmap",
+      "x-ui-level": "top",
+      "x-ui-order": 70,
+      "x-ui-collapsed": true,
+      "required": ["enabled", "position_x", "position_y", "cell_size", "show_label", "label_font_size"],
+      "properties": {
+        "enabled": { "type": "boolean", "title": "Enabled" },
+        "position_x": { "type": "integer", "title": "Position X", "minimum": 0, "maximum": 3840 },
+        "position_y": { "type": "integer", "title": "Position Y", "minimum": 0, "maximum": 2160 },
+        "cell_size": {
+          "type": "integer",
+          "title": "Cell Size",
+          "minimum": 4,
+          "maximum": 32,
+          "description": "Pixels per grid cell (8x8 grid)"
+        },
+        "show_label": { "type": "boolean", "title": "Show Label" },
+        "label_font_size": { "type": "integer", "title": "Label Font Size", "minimum": 8, "maximum": 48 }
+      }
+    },
+    "detections": {
+      "type": "object",
+      "title": "Object Detections",
+      "x-ui-level": "top",
+      "x-ui-order": 80,
+      "x-ui-collapsed": true,
+      "required": ["enabled", "color", "box_thickness", "per_class_color", "label_font_size", "min_confidence"],
+      "properties": {
+        "enabled": { "type": "boolean", "title": "Enabled" },
+        "color": { "$ref": "#/definitions/argb_color", "title": "Default Color" },
+        "box_thickness": {
+          "type": "number",
+          "title": "Box Thickness",
+          "minimum": 0.5,
+          "maximum": 10.0,
+          "description": "Bounding box outline thickness in pixels"
+        },
+        "per_class_color": {
+          "type": "boolean",
+          "title": "Per-Class Colors",
+          "description": "Use 8-color palette cycling by class ID"
+        },
+        "label_font_size": { "type": "integer", "title": "Label Font Size", "minimum": 8, "maximum": 48 },
+        "min_confidence": {
+          "type": "number",
+          "title": "Min Confidence",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Minimum confidence threshold for displaying detections"
         }
       }
     }

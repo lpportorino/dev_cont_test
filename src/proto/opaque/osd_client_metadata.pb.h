@@ -58,14 +58,10 @@ extern "C"
 #endif
 
 /* Initializer values for message structs */
-#define ser_OsdClientMetadata_init_default   \
-  {                                          \
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 \
-  }
-#define ser_OsdClientMetadata_init_zero      \
-  {                                          \
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 \
-  }
+#define ser_OsdClientMetadata_init_default \
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+#define ser_OsdClientMetadata_init_zero \
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 
 /* Field tags (for use in manual encoding/decoding) */
 #define ser_OsdClientMetadata_canvas_width_px_tag 1

@@ -57,40 +57,52 @@ extern "C"
 #endif
 
 /* Initializer values for message structs */
-#define ser_JonGuiDataPowerModule_init_default \
-  {                                            \
-    0, 0, 0, 0, 0                              \
-  }
-#define ser_JonGuiDataPower_init_default                                       \
-  {                                                                            \
-    false, ser_JonGuiDataPowerModule_init_default, false,                      \
-      ser_JonGuiDataPowerModule_init_default, false,                           \
-      ser_JonGuiDataPowerModule_init_default, false,                           \
-      ser_JonGuiDataPowerModule_init_default, false,                           \
-      ser_JonGuiDataPowerModule_init_default, false,                           \
-      ser_JonGuiDataPowerModule_init_default, false,                           \
-      ser_JonGuiDataPowerModule_init_default, false,                           \
-      ser_JonGuiDataPowerModule_init_default,                                  \
-      _ser_JonGuiDataAccumulatorStateIdx_MIN, 0,                               \
-      _ser_JonGuiDataExtBatStatus_MIN, false, ser_JonGuiDataMeteo_init_default \
-  }
-#define ser_JonGuiDataPowerModule_init_zero \
-  {                                         \
-    0, 0, 0, 0, 0                           \
-  }
-#define ser_JonGuiDataPower_init_zero                                       \
-  {                                                                         \
-    false, ser_JonGuiDataPowerModule_init_zero, false,                      \
-      ser_JonGuiDataPowerModule_init_zero, false,                           \
-      ser_JonGuiDataPowerModule_init_zero, false,                           \
-      ser_JonGuiDataPowerModule_init_zero, false,                           \
-      ser_JonGuiDataPowerModule_init_zero, false,                           \
-      ser_JonGuiDataPowerModule_init_zero, false,                           \
-      ser_JonGuiDataPowerModule_init_zero, false,                           \
-      ser_JonGuiDataPowerModule_init_zero,                                  \
-      _ser_JonGuiDataAccumulatorStateIdx_MIN, 0,                            \
-      _ser_JonGuiDataExtBatStatus_MIN, false, ser_JonGuiDataMeteo_init_zero \
-  }
+#define ser_JonGuiDataPowerModule_init_default { 0, 0, 0, 0, 0 }
+#define ser_JonGuiDataPower_init_default    \
+  { false,                                  \
+    ser_JonGuiDataPowerModule_init_default, \
+    false,                                  \
+    ser_JonGuiDataPowerModule_init_default, \
+    false,                                  \
+    ser_JonGuiDataPowerModule_init_default, \
+    false,                                  \
+    ser_JonGuiDataPowerModule_init_default, \
+    false,                                  \
+    ser_JonGuiDataPowerModule_init_default, \
+    false,                                  \
+    ser_JonGuiDataPowerModule_init_default, \
+    false,                                  \
+    ser_JonGuiDataPowerModule_init_default, \
+    false,                                  \
+    ser_JonGuiDataPowerModule_init_default, \
+    _ser_JonGuiDataAccumulatorStateIdx_MIN, \
+    0,                                      \
+    _ser_JonGuiDataExtBatStatus_MIN,        \
+    false,                                  \
+    ser_JonGuiDataMeteo_init_default }
+#define ser_JonGuiDataPowerModule_init_zero { 0, 0, 0, 0, 0 }
+#define ser_JonGuiDataPower_init_zero       \
+  { false,                                  \
+    ser_JonGuiDataPowerModule_init_zero,    \
+    false,                                  \
+    ser_JonGuiDataPowerModule_init_zero,    \
+    false,                                  \
+    ser_JonGuiDataPowerModule_init_zero,    \
+    false,                                  \
+    ser_JonGuiDataPowerModule_init_zero,    \
+    false,                                  \
+    ser_JonGuiDataPowerModule_init_zero,    \
+    false,                                  \
+    ser_JonGuiDataPowerModule_init_zero,    \
+    false,                                  \
+    ser_JonGuiDataPowerModule_init_zero,    \
+    false,                                  \
+    ser_JonGuiDataPowerModule_init_zero,    \
+    _ser_JonGuiDataAccumulatorStateIdx_MIN, \
+    0,                                      \
+    _ser_JonGuiDataExtBatStatus_MIN,        \
+    false,                                  \
+    ser_JonGuiDataMeteo_init_zero }
 
 /* Field tags (for use in manual encoding/decoding) */
 #define ser_JonGuiDataPowerModule_voltage_tag 1

@@ -25,7 +25,7 @@ typedef struct _jon_logs_ClientLogEntry
   pb_callback_t sid;
   pb_callback_t ua; /* user agent */
   pb_callback_t
-    url;    /* page path + query (optional - workers don't have location) */
+    url; /* page path + query (optional - workers don't have location) */
   pb_callback_t
     origin; /* page origin (optional - workers don't have location) */
   pb_callback_t commit; /* git commit hash (build-time) */

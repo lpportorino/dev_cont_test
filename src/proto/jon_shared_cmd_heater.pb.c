@@ -19,3 +19,23 @@ PB_BIND(cmd_Heater_SetHeating, cmd_Heater_SetHeating, AUTO)
 
 
 PB_BIND(cmd_Heater_GetStatus, cmd_Heater_GetStatus, AUTO)
+
+
+PB_BIND(cmd_Heater_EnableAutomaticControl,
+        cmd_Heater_EnableAutomaticControl,
+        AUTO)
+
+
+PB_BIND(cmd_Heater_DisableAutomaticControl,
+        cmd_Heater_DisableAutomaticControl,
+        AUTO)
+
+
+PB_BIND(cmd_Heater_AutomaticControlChannelParams,
+        cmd_Heater_AutomaticControlChannelParams,
+        AUTO)
+
+
+PB_BIND(cmd_Heater_SetAutomaticControlParams,
+        cmd_Heater_SetAutomaticControlParams,
+        AUTO)

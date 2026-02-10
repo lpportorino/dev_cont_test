@@ -36,14 +36,10 @@ extern "C"
 #endif
 
 /* Initializer values for message structs */
-#define ser_JonGuiDataPMU_init_default                                 \
-  {                                                                    \
-    0, 0, false, ser_JonGuiDataMeteo_init_default, 0, 0, 0, 0, 0, 0, 0 \
-  }
-#define ser_JonGuiDataPMU_init_zero                                 \
-  {                                                                 \
-    0, 0, false, ser_JonGuiDataMeteo_init_zero, 0, 0, 0, 0, 0, 0, 0 \
-  }
+#define ser_JonGuiDataPMU_init_default \
+  { 0, 0, false, ser_JonGuiDataMeteo_init_default, 0, 0, 0, 0, 0, 0, 0 }
+#define ser_JonGuiDataPMU_init_zero \
+  { 0, 0, false, ser_JonGuiDataMeteo_init_zero, 0, 0, 0, 0, 0, 0, 0 }
 
 /* Field tags (for use in manual encoding/decoding) */
 #define ser_JonGuiDataPMU_temperature_tag 1

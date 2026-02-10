@@ -71,5 +71,21 @@
     "sun_back_svg": "resources/navball_indicators/sun_back.svg",
     "moon_front_svg": "resources/navball_indicators/moon_front.svg",
     "moon_back_svg": "resources/navball_indicators/moon_back.svg"
+  },
+  "sharpness_heatmap": {
+    "enabled": true,
+    "position_x": 825,
+    "position_y": 645,
+    "cell_size": 8,
+    "show_label": true,
+    "label_font_size": 12
+  },
+  "detections": {
+    "enabled": true,
+    "color": "#FF00FF00",
+    "box_thickness": 2.0,
+    "per_class_color": true,
+    "label_font_size": 12,
+    "min_confidence": 0.25
   }
 }

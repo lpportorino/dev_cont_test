@@ -430,6 +430,49 @@ parse_celestial_indicators_config(cJSON *root,
           sizeof(config->moon_back_svg_path) - 1);
 }
 
+/**
+ * Parse sharpness heatmap configuration
+ */
+static void
+parse_sharpness_heatmap_config(cJSON *root, sharpness_heatmap_config_t *config)
+{
+  cJSON *heatmap = cJSON_GetObjectItem(root, "sharpness_heatmap");
+  if (!heatmap)
+    {
+      config->enabled = false;
+      return;
+    }
+
+  config->enabled         = get_bool(heatmap, "enabled", true);
+  config->pos_x           = get_int(heatmap, "position_x", 1810);
+  config->pos_y           = get_int(heatmap, "position_y", 970);
+  config->cell_size       = get_int(heatmap, "cell_size", 12);
+  config->show_label      = get_bool(heatmap, "show_label", true);
+  config->label_font_size = get_int(heatmap, "label_font_size", 16);
+}
+
+/**
+ * Parse detections overlay configuration
+ */
+static void
+parse_detections_config(cJSON *root, detections_config_t *config)
+{
+  cJSON *detections = cJSON_GetObjectItem(root, "detections");
+  if (!detections)
+    {
+      config->enabled = false;
+      return;
+    }
+
+  config->enabled         = get_bool(detections, "enabled", true);
+  config->color           = get_color(detections, "color", 0xFF00FF00);
+  config->box_thickness   = (float)get_double(detections, "box_thickness", 2.0);
+  config->per_class_color = get_bool(detections, "per_class_color", true);
+  config->label_font_size = get_int(detections, "label_font_size", 16);
+  config->min_confidence
+    = (float)get_double(detections, "min_confidence", 0.25);
+}
+
 // ════════════════════════════════════════════════════════════
 // JSON PARSING IMPLEMENTATION
 // ════════════════════════════════════════════════════════════
@@ -458,6 +501,8 @@ config_parse_json(osd_config_t *config, const char *json_path)
   parse_variant_info_config(root, &config->variant_info);
   parse_navball_config(root, &config->navball);
   parse_celestial_indicators_config(root, &config->celestial_indicators);
+  parse_sharpness_heatmap_config(root, &config->sharpness_heatmap);
+  parse_detections_config(root, &config->detections);
 
   // Clean up
   cJSON_Delete(root);

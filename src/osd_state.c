@@ -162,6 +162,75 @@ osd_state_get_frame_monotonic_heat_us(const osd_state_t *state)
 }
 
 // ════════════════════════════════════════════════════════════
+// SHARPNESS DATA
+// ════════════════════════════════════════════════════════════
+
+bool
+osd_state_get_sharpness(const osd_context_t *ctx, osd_sharpness_data_t *out)
+{
+  if (!out || !ctx)
+    return false;
+
+  out->valid        = false;
+  out->global_score = 0.0f;
+  out->grid_count   = 0;
+
+  if (!ctx->cv_meta.sharpness_valid)
+    return false;
+
+  out->global_score = ctx->cv_meta.sharpness_level0;
+  out->grid_count   = ctx->cv_meta.sharpness_level3_count;
+
+  int copy_count = out->grid_count;
+  if (copy_count > 64)
+    copy_count = 64;
+  for (int i = 0; i < copy_count; i++)
+    {
+      out->grid_8x8[i] = ctx->cv_meta.sharpness_level3[i];
+    }
+
+  out->valid = true;
+  return true;
+}
+
+// ════════════════════════════════════════════════════════════
+// DETECTION DATA
+// ════════════════════════════════════════════════════════════
+
+bool
+osd_state_get_detections(const osd_context_t *ctx, osd_detections_data_t *out)
+{
+  if (!out || !ctx)
+    return false;
+
+  out->valid  = false;
+  out->count  = 0;
+  out->status = 0;
+
+  if (!ctx->detections.valid)
+    return false;
+
+  out->status = ctx->detections.status;
+  out->count  = ctx->detections.count;
+
+  int copy_count = out->count;
+  if (copy_count > 64)
+    copy_count = 64;
+  for (int i = 0; i < copy_count; i++)
+    {
+      out->items[i].x1         = ctx->detections.items[i].x1;
+      out->items[i].y1         = ctx->detections.items[i].y1;
+      out->items[i].x2         = ctx->detections.items[i].x2;
+      out->items[i].y2         = ctx->detections.items[i].y2;
+      out->items[i].confidence = ctx->detections.items[i].confidence;
+      out->items[i].class_id   = ctx->detections.items[i].class_id;
+    }
+
+  out->valid = true;
+  return true;
+}
+
+// ════════════════════════════════════════════════════════════
 // CLIENT METADATA
 // ════════════════════════════════════════════════════════════
 

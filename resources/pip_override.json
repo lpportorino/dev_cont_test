@@ -15,5 +15,11 @@
   },
   "celestial_indicators": {
     "enabled": false
+  },
+  "sharpness_heatmap": {
+    "enabled": false
+  },
+  "detections": {
+    "enabled": false
   }
 }

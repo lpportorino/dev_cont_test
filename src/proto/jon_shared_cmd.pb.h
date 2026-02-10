@@ -5,7 +5,6 @@
 #define PB_CMD_JON_SHARED_CMD_PB_H_INCLUDED
 #include "jon_shared_cmd_compass.pb.h"
 #include "jon_shared_cmd_cv.pb.h"
-#include "jon_shared_cmd_day_cam_glass_heater.pb.h"
 #include "jon_shared_cmd_day_camera.pb.h"
 #include "jon_shared_cmd_gps.pb.h"
 #include "jon_shared_cmd_heat_camera.pb.h"
@@ -76,7 +75,6 @@ typedef struct _cmd_Root
     cmd_Frozen frozen;
     cmd_System_Root system;
     cmd_CV_Root cv;
-    cmd_DayCamGlassHeater_Root day_cam_glass_heater;
     cmd_Lira_Root lira;
     cmd_Power_Root power;
     cmd_PMU_Root pmu;
@@ -99,18 +97,9 @@ extern "C"
       cmd_DayCamera_Root_init_default                      \
     }                                                      \
   }
-#define cmd_Ping_init_default \
-  {                           \
-    0                         \
-  }
-#define cmd_Noop_init_default \
-  {                           \
-    0                         \
-  }
-#define cmd_Frozen_init_default \
-  {                             \
-    0                           \
-  }
+#define cmd_Ping_init_default { 0 }
+#define cmd_Noop_init_default { 0 }
+#define cmd_Frozen_init_default { 0 }
 #define cmd_Root_init_zero                                 \
   {                                                        \
     0, 0, 0, 0, _ser_JonGuiDataClientType_MIN, 0, 0, 0, 0, \
@@ -119,18 +108,9 @@ extern "C"
       cmd_DayCamera_Root_init_zero                         \
     }                                                      \
   }
-#define cmd_Ping_init_zero \
-  {                        \
-    0                      \
-  }
-#define cmd_Noop_init_zero \
-  {                        \
-    0                      \
-  }
-#define cmd_Frozen_init_zero \
-  {                          \
-    0                        \
-  }
+#define cmd_Ping_init_zero { 0 }
+#define cmd_Noop_init_zero { 0 }
+#define cmd_Frozen_init_zero { 0 }
 
 /* Field tags (for use in manual encoding/decoding) */
 #define cmd_Root_protocol_version_tag 1
@@ -157,7 +137,6 @@ extern "C"
 #define cmd_Root_frozen_tag 30
 #define cmd_Root_system_tag 31
 #define cmd_Root_cv_tag 32
-#define cmd_Root_day_cam_glass_heater_tag 33
 #define cmd_Root_lira_tag 34
 #define cmd_Root_power_tag 35
 #define cmd_Root_pmu_tag 36
@@ -190,8 +169,6 @@ extern "C"
   X(a, STATIC, ONEOF, MESSAGE, (payload, frozen, payload.frozen), 30)         \
   X(a, STATIC, ONEOF, MESSAGE, (payload, system, payload.system), 31)         \
   X(a, STATIC, ONEOF, MESSAGE, (payload, cv, payload.cv), 32)                 \
-  X(a, STATIC, ONEOF, MESSAGE,                                                \
-    (payload, day_cam_glass_heater, payload.day_cam_glass_heater), 33)        \
   X(a, STATIC, ONEOF, MESSAGE, (payload, lira, payload.lira), 34)             \
   X(a, STATIC, ONEOF, MESSAGE, (payload, power, payload.power), 35)           \
   X(a, STATIC, ONEOF, MESSAGE, (payload, pmu, payload.pmu), 36)               \
@@ -212,7 +189,6 @@ extern "C"
 #define cmd_Root_payload_frozen_MSGTYPE cmd_Frozen
 #define cmd_Root_payload_system_MSGTYPE cmd_System_Root
 #define cmd_Root_payload_cv_MSGTYPE cmd_CV_Root
-#define cmd_Root_payload_day_cam_glass_heater_MSGTYPE cmd_DayCamGlassHeater_Root
 #define cmd_Root_payload_lira_MSGTYPE cmd_Lira_Root
 #define cmd_Root_payload_power_MSGTYPE cmd_Power_Root
 #define cmd_Root_payload_pmu_MSGTYPE cmd_PMU_Root

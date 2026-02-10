@@ -59,9 +59,12 @@ case "$VARIANT" in
     ;;
 esac
 
-# Copy variant config to variant-specific build dir
+# Copy variant config to variant-specific build dir and shared location
 echo "Using config: $CONFIG_SOURCE"
 cp "$PROJECT_ROOT/$CONFIG_SOURCE" "$PROJECT_ROOT/$BUILD_SUBDIR/resources/config.json"
+# Also copy to build/resources/<variant>_config.json for WASM runtime access
+mkdir -p "$PROJECT_ROOT/build/resources"
+cp "$PROJECT_ROOT/$CONFIG_SOURCE" "$PROJECT_ROOT/build/resources/${VARIANT}_config.json"
 
 # Determine build mode (default: production)
 BUILD_MODE="${BUILD_MODE:-production}"

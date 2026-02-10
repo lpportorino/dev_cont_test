@@ -121,6 +121,49 @@ bool osd_state_get_client_metadata(const osd_context_t *ctx,
                                    osd_client_metadata_t *metadata);
 
 // ════════════════════════════════════════════════════════════
+// SHARPNESS DATA (from CvMeta opaque payload)
+// ════════════════════════════════════════════════════════════
+
+typedef struct
+{
+  float global_score; // Level 0: single value [0.0-1.0]
+  float grid_8x8[64]; // Level 3: 8x8 row-major [0.0-1.0]
+  int grid_count;     // Valid cells in grid (should be 64)
+  bool valid;
+} osd_sharpness_data_t;
+
+// Get sharpness data from CV metadata opaque payload
+// Returns true if sharpness data is valid
+// Note: Reads from context (populated during opaque payload decode)
+bool osd_state_get_sharpness(const osd_context_t *ctx,
+                             osd_sharpness_data_t *out);
+
+// ════════════════════════════════════════════════════════════
+// DETECTION DATA (from ObjectDetections opaque payload)
+// ════════════════════════════════════════════════════════════
+
+typedef struct
+{
+  float x1, y1, x2, y2; // NDC [-1.0, 1.0]
+  float confidence;
+  int class_id;
+} osd_detection_t;
+
+typedef struct
+{
+  osd_detection_t items[64]; // OSD_MAX_DETECTIONS
+  int count;
+  int status; // ser_DetectionStatus enum value
+  bool valid;
+} osd_detections_data_t;
+
+// Get YOLO detection data from opaque payload
+// Returns true if detection data is valid
+// Note: Reads from context (populated during opaque payload decode)
+bool osd_state_get_detections(const osd_context_t *ctx,
+                              osd_detections_data_t *out);
+
+// ════════════════════════════════════════════════════════════
 // STATE TIMING DATA (for debug overlay)
 // ════════════════════════════════════════════════════════════
 

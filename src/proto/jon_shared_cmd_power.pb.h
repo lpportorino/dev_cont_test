@@ -56,18 +56,9 @@ extern "C"
       cmd_Power_SetChannel_init_default \
     }                                   \
   }
-#define cmd_Power_SetChannel_init_default \
-  {                                       \
-    0, 0                                  \
-  }
-#define cmd_Power_SetAll_init_default \
-  {                                   \
-    0                                 \
-  }
-#define cmd_Power_SetAlertThreshold_init_default \
-  {                                              \
-    0, 0                                         \
-  }
+#define cmd_Power_SetChannel_init_default { 0, 0 }
+#define cmd_Power_SetAll_init_default { 0 }
+#define cmd_Power_SetAlertThreshold_init_default { 0, 0 }
 #define cmd_Power_Root_init_zero     \
   {                                  \
     0,                               \
@@ -75,18 +66,9 @@ extern "C"
       cmd_Power_SetChannel_init_zero \
     }                                \
   }
-#define cmd_Power_SetChannel_init_zero \
-  {                                    \
-    0, 0                               \
-  }
-#define cmd_Power_SetAll_init_zero \
-  {                                \
-    0                              \
-  }
-#define cmd_Power_SetAlertThreshold_init_zero \
-  {                                           \
-    0, 0                                      \
-  }
+#define cmd_Power_SetChannel_init_zero { 0, 0 }
+#define cmd_Power_SetAll_init_zero { 0 }
+#define cmd_Power_SetAlertThreshold_init_zero { 0, 0 }
 
 /* Field tags (for use in manual encoding/decoding) */
 #define cmd_Power_SetChannel_channel_tag 1

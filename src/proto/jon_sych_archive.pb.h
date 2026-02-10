@@ -95,16 +95,16 @@ extern "C"
 #endif
 
 /* Initializer values for message structs */
-#define jon_archive_SychArchiveIndex_init_default        \
-  {                                                      \
-    0, 0, { { NULL }, NULL }, { { NULL }, NULL }, false, \
-      jon_archive_TimelineIndex_init_default, false,     \
-      jon_archive_OSDReference_init_default              \
-  }
-#define jon_archive_ArchiveEntry_init_default \
-  {                                           \
-    { { NULL }, NULL }, 0, 0, 0               \
-  }
+#define jon_archive_SychArchiveIndex_init_default \
+  { 0,                                            \
+    0,                                            \
+    { { NULL }, NULL },                           \
+    { { NULL }, NULL },                           \
+    false,                                        \
+    jon_archive_TimelineIndex_init_default,       \
+    false,                                        \
+    jon_archive_OSDReference_init_default }
+#define jon_archive_ArchiveEntry_init_default { { { NULL }, NULL }, 0, 0, 0 }
 #define jon_archive_TimelineIndex_init_default \
   {                                            \
     0, 0,                                      \
@@ -112,11 +112,13 @@ extern "C"
       { NULL }, NULL                           \
     }                                          \
   }
-#define jon_archive_VideoEntry_init_default                               \
-  {                                                                       \
-    { { NULL }, NULL }, { { NULL }, NULL }, { { NULL }, NULL }, 0, false, \
-      jon_video_VideoMeta_init_default                                    \
-  }
+#define jon_archive_VideoEntry_init_default \
+  { { { NULL }, NULL },                     \
+    { { NULL }, NULL },                     \
+    { { NULL }, NULL },                     \
+    0,                                      \
+    false,                                  \
+    jon_video_VideoMeta_init_default }
 #define jon_archive_OSDReference_init_default                   \
   {                                                             \
     { { NULL }, NULL }, { { NULL }, NULL }, { { NULL }, NULL }, \
@@ -125,16 +127,16 @@ extern "C"
       { NULL }, NULL                                            \
     }                                                           \
   }
-#define jon_archive_SychArchiveIndex_init_zero           \
-  {                                                      \
-    0, 0, { { NULL }, NULL }, { { NULL }, NULL }, false, \
-      jon_archive_TimelineIndex_init_zero, false,        \
-      jon_archive_OSDReference_init_zero                 \
-  }
-#define jon_archive_ArchiveEntry_init_zero \
-  {                                        \
-    { { NULL }, NULL }, 0, 0, 0            \
-  }
+#define jon_archive_SychArchiveIndex_init_zero \
+  { 0,                                         \
+    0,                                         \
+    { { NULL }, NULL },                        \
+    { { NULL }, NULL },                        \
+    false,                                     \
+    jon_archive_TimelineIndex_init_zero,       \
+    false,                                     \
+    jon_archive_OSDReference_init_zero }
+#define jon_archive_ArchiveEntry_init_zero { { { NULL }, NULL }, 0, 0, 0 }
 #define jon_archive_TimelineIndex_init_zero \
   {                                         \
     0, 0,                                   \
@@ -142,11 +144,13 @@ extern "C"
       { NULL }, NULL                        \
     }                                       \
   }
-#define jon_archive_VideoEntry_init_zero                                  \
-  {                                                                       \
-    { { NULL }, NULL }, { { NULL }, NULL }, { { NULL }, NULL }, 0, false, \
-      jon_video_VideoMeta_init_zero                                       \
-  }
+#define jon_archive_VideoEntry_init_zero \
+  { { { NULL }, NULL },                  \
+    { { NULL }, NULL },                  \
+    { { NULL }, NULL },                  \
+    0,                                   \
+    false,                               \
+    jon_video_VideoMeta_init_zero }
 #define jon_archive_OSDReference_init_zero                      \
   {                                                             \
     { { NULL }, NULL }, { { NULL }, NULL }, { { NULL }, NULL }, \

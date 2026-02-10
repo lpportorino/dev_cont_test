@@ -247,7 +247,7 @@ variant_info_render(osd_context_t *ctx, const osd_state_t *state)
   {
     const char *key;
     char value[128];
-  } items[20];
+  } items[21];
 
   // Draw counter (increments each state update/render cycle)
   snprintf(items[0].value, sizeof(items[0].value), "%u", ctx->frame_count);
@@ -399,6 +399,19 @@ variant_info_render(osd_context_t *ctx, const osd_state_t *state)
       snprintf(items[19].value, sizeof(items[19].value), "N/A");
       items[19].key = "Theme";
     }
+
+  // Sharpness score from CvMeta opaque payload
+  osd_sharpness_data_t sharp_data;
+  if (osd_state_get_sharpness(ctx, &sharp_data) && sharp_data.valid)
+    {
+      snprintf(items[20].value, sizeof(items[20].value), "%.3f",
+               sharp_data.global_score);
+    }
+  else
+    {
+      snprintf(items[20].value, sizeof(items[20].value), "N/A");
+    }
+  items[20].key = "Sharpness";
 
   // Render each config item
   for (size_t i = 0; i < sizeof(items) / sizeof(items[0]); i++)

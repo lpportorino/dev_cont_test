@@ -38,7 +38,7 @@ typedef enum _ser_JonGuiDataCV_CvBridgeStatus
   ser_JonGuiDataCV_CvBridgeStatus_CV_BRIDGE_STATUS_CRASHED
   = 5, /* Exited unexpectedly */
   ser_JonGuiDataCV_CvBridgeStatus_CV_BRIDGE_STATUS_RESTARTING
-  = 6  /* Auto-restart in progress */
+  = 6 /* Auto-restart in progress */
 } ser_JonGuiDataCV_CvBridgeStatus;
 
 /* CV Bridge exit/termination reason */
@@ -60,7 +60,7 @@ typedef enum _ser_JonGuiDataCV_CvBridgeExitReason
   ser_JonGuiDataCV_CvBridgeExitReason_CV_BRIDGE_EXIT_REASON_TIMEOUT
   = 7, /* Watchdog timeout */
   ser_JonGuiDataCV_CvBridgeExitReason_CV_BRIDGE_EXIT_REASON_SIGNAL
-  = 8  /* Killed by signal */
+  = 8 /* Killed by signal */
 } ser_JonGuiDataCV_CvBridgeExitReason;
 
 /* Struct definitions */

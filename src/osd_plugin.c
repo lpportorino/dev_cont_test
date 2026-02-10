@@ -26,7 +26,9 @@
 
 // Widgets
 #include "widgets/crosshair.h"
+#include "widgets/detections.h"
 #include "widgets/navball.h"
+#include "widgets/sharpness_heatmap.h"
 #include "widgets/timestamp.h"
 #include "widgets/variant_info.h"
 
@@ -64,10 +66,25 @@
 
 // Opaque payload protos
 // Note: First sync with `make proto` if this include fails
+#include "opaque/cv_meta.pb.h"
+#include "opaque/detection_common.pb.h"
+#include "opaque/object_detections_day.pb.h"
+#include "opaque/object_detections_heat.pb.h"
 #include "opaque/osd_client_metadata.pb.h"
 
 // UUID for OsdClientMetadata opaque payload
 #define OSD_CLIENT_METADATA_UUID "01941b00-0000-7000-8000-000000000001"
+// UUID for CvMeta (sharpness + camera metadata)
+#define CV_META_UUID "019c3e33-d52d-7552-b36b-6fdcaa5d59b8"
+// UUID for ObjectDetections (YOLO results)
+#define OBJECT_DETECTIONS_DAY_UUID "019c40f6-825c-7f4c-8284-ddad4375ed9b"
+#define OBJECT_DETECTIONS_HEAT_UUID "019c40f6-825d-7e0e-9893-87c7b167a751"
+
+// Opaque payload type IDs for dispatch
+#define OPAQUE_TYPE_NONE 0
+#define OPAQUE_TYPE_CLIENT_META 1
+#define OPAQUE_TYPE_CV_META 2
+#define OPAQUE_TYPE_DETECTIONS 3
 
 // Mini XML parser (will include if available)
 // #include <mxml.h>
@@ -123,9 +140,10 @@ typedef struct
 {
   osd_context_t *ctx;
   char uuid_buffer[64];
-  uint8_t payload_buffer[128];
+  uint8_t payload_buffer[4096];
   size_t payload_size;
   bool uuid_matched;
+  int matched_type; // OPAQUE_TYPE_* constants
 } opaque_payload_ctx_t;
 
 // Callback for type_uuid string field in JonOpaquePayload
@@ -150,9 +168,34 @@ opaque_uuid_decode_callback(pb_istream_t *stream,
 
   cb_ctx->uuid_buffer[len] = '\0';
 
-  // Check if this UUID matches our OsdClientMetadata UUID
-  cb_ctx->uuid_matched
-    = (strcmp(cb_ctx->uuid_buffer, OSD_CLIENT_METADATA_UUID) == 0);
+  // Check UUID against known opaque payload types
+  cb_ctx->uuid_matched = false;
+  cb_ctx->matched_type = OPAQUE_TYPE_NONE;
+
+  if (strcmp(cb_ctx->uuid_buffer, OSD_CLIENT_METADATA_UUID) == 0)
+    {
+      cb_ctx->uuid_matched = true;
+      cb_ctx->matched_type = OPAQUE_TYPE_CLIENT_META;
+    }
+  else if (strcmp(cb_ctx->uuid_buffer, CV_META_UUID) == 0)
+    {
+      cb_ctx->uuid_matched = true;
+      cb_ctx->matched_type = OPAQUE_TYPE_CV_META;
+    }
+#ifdef OSD_STREAM_DAY
+  else if (strcmp(cb_ctx->uuid_buffer, OBJECT_DETECTIONS_DAY_UUID) == 0)
+    {
+      cb_ctx->uuid_matched = true;
+      cb_ctx->matched_type = OPAQUE_TYPE_DETECTIONS;
+    }
+#endif
+#ifdef OSD_STREAM_THERMAL
+  else if (strcmp(cb_ctx->uuid_buffer, OBJECT_DETECTIONS_HEAT_UUID) == 0)
+    {
+      cb_ctx->uuid_matched = true;
+      cb_ctx->matched_type = OPAQUE_TYPE_DETECTIONS;
+    }
+#endif
 
   return true;
 }
@@ -179,6 +222,78 @@ opaque_payload_decode_callback(pb_istream_t *stream,
   if (!pb_read(stream, cb_ctx->payload_buffer, cb_ctx->payload_size))
     {
       return false;
+    }
+
+  return true;
+}
+
+// ════════════════════════════════════════════════════════════
+// NANOPB CALLBACKS FOR CV DATA
+// ════════════════════════════════════════════════════════════
+
+// Context for accumulating repeated float values (sharpness grid)
+typedef struct
+{
+  float *dest;   // Destination array
+  int count;     // Current count
+  int max_count; // Maximum capacity
+} float_array_ctx_t;
+
+// Callback for REPEATED FLOAT (called once per element in a loop)
+static bool
+sharpness_level3_decode_callback(pb_istream_t *stream,
+                                 const pb_field_t *field,
+                                 void **arg)
+{
+  float_array_ctx_t *fa_ctx = (float_array_ctx_t *)*arg;
+  (void)field;
+
+  float value;
+  if (!pb_decode_fixed32(stream, &value))
+    {
+      return false;
+    }
+
+  if (fa_ctx->count < fa_ctx->max_count)
+    {
+      fa_ctx->dest[fa_ctx->count] = value;
+    }
+  fa_ctx->count++;
+
+  return true;
+}
+
+// Context for accumulating detection messages
+typedef struct
+{
+  osd_context_t *ctx;
+} detections_ctx_t;
+
+// Callback for REPEATED MESSAGE (called once per detection)
+static bool
+detections_decode_callback(pb_istream_t *stream,
+                           const pb_field_t *field,
+                           void **arg)
+{
+  detections_ctx_t *det_ctx = (detections_ctx_t *)*arg;
+  (void)field;
+
+  ser_ObjectDetection det = ser_ObjectDetection_init_zero;
+  if (!pb_decode(stream, ser_ObjectDetection_fields, &det))
+    {
+      return false;
+    }
+
+  int idx = det_ctx->ctx->detections.count;
+  if (idx < OSD_MAX_DETECTIONS)
+    {
+      det_ctx->ctx->detections.items[idx].x1         = det.x1;
+      det_ctx->ctx->detections.items[idx].y1         = det.y1;
+      det_ctx->ctx->detections.items[idx].x2         = det.x2;
+      det_ctx->ctx->detections.items[idx].y2         = det.y2;
+      det_ctx->ctx->detections.items[idx].confidence = det.confidence;
+      det_ctx->ctx->detections.items[idx].class_id   = det.class_id;
+      det_ctx->ctx->detections.count++;
     }
 
   return true;
@@ -212,12 +327,18 @@ opaque_payloads_decode_callback(pb_istream_t *stream,
       return false;
     }
 
-  // If UUID matched, decode the payload as OsdClientMetadata
-  if (cb_ctx.uuid_matched && cb_ctx.payload_size > 0)
+  // Dispatch based on matched type
+  if (!cb_ctx.uuid_matched || cb_ctx.payload_size == 0)
+    {
+      return true;
+    }
+
+  pb_istream_t payload_stream
+    = pb_istream_from_buffer(cb_ctx.payload_buffer, cb_ctx.payload_size);
+
+  if (cb_ctx.matched_type == OPAQUE_TYPE_CLIENT_META)
     {
       ser_OsdClientMetadata client_metadata = ser_OsdClientMetadata_init_zero;
-      pb_istream_t payload_stream
-        = pb_istream_from_buffer(cb_ctx.payload_buffer, cb_ctx.payload_size);
 
       if (pb_decode(&payload_stream, ser_OsdClientMetadata_fields,
                     &client_metadata))
@@ -236,10 +357,9 @@ opaque_payloads_decode_callback(pb_istream_t *stream,
                        client_metadata.canvas_width_px,
                        client_metadata.canvas_height_px,
                        client_metadata.device_pixel_ratio);
-              return true; // Continue processing other payloads
+              return true;
             }
 
-          // Store in context for variant_info to read
           ctx->client_metadata.canvas_width_px
             = client_metadata.canvas_width_px;
           ctx->client_metadata.canvas_height_px
@@ -250,8 +370,6 @@ opaque_payloads_decode_callback(pb_istream_t *stream,
             = client_metadata.osd_buffer_width;
           ctx->client_metadata.osd_buffer_height
             = client_metadata.osd_buffer_height;
-
-          // Video proxy bounds (NDC)
           ctx->client_metadata.video_proxy_ndc_x
             = client_metadata.video_proxy_ndc_x;
           ctx->client_metadata.video_proxy_ndc_y
@@ -260,17 +378,12 @@ opaque_payloads_decode_callback(pb_istream_t *stream,
             = client_metadata.video_proxy_ndc_width;
           ctx->client_metadata.video_proxy_ndc_height
             = client_metadata.video_proxy_ndc_height;
-
-          // Scale factor
-          ctx->client_metadata.scale_factor = client_metadata.scale_factor;
-
-          // Theme info
+          ctx->client_metadata.scale_factor  = client_metadata.scale_factor;
           ctx->client_metadata.is_sharp_mode = client_metadata.is_sharp_mode;
           ctx->client_metadata.theme_hue     = client_metadata.theme_hue;
           ctx->client_metadata.theme_chroma  = client_metadata.theme_chroma;
           ctx->client_metadata.theme_lightness
             = client_metadata.theme_lightness;
-
           ctx->client_metadata.valid = true;
 
           LOG_DEBUG(
@@ -294,6 +407,100 @@ opaque_payloads_decode_callback(pb_istream_t *stream,
           LOG_WARN("Failed to decode OsdClientMetadata payload");
         }
     }
+  else if (cb_ctx.matched_type == OPAQUE_TYPE_CV_META)
+    {
+      ser_CvMeta cv_meta = ser_CvMeta_init_zero;
+
+      // Wire sharpness_level3 callback for the appropriate channel
+      float_array_ctx_t level3_ctx = { .dest  = ctx->cv_meta.sharpness_level3,
+                                       .count = 0,
+                                       .max_count = 64 };
+
+#ifdef OSD_STREAM_DAY
+      cv_meta.channel_day.sharpness_level3.funcs.decode
+        = sharpness_level3_decode_callback;
+      cv_meta.channel_day.sharpness_level3.arg = &level3_ctx;
+#endif
+#ifdef OSD_STREAM_THERMAL
+      cv_meta.channel_heat.sharpness_level3.funcs.decode
+        = sharpness_level3_decode_callback;
+      cv_meta.channel_heat.sharpness_level3.arg = &level3_ctx;
+#endif
+
+      if (pb_decode(&payload_stream, ser_CvMeta_fields, &cv_meta))
+        {
+#ifdef OSD_STREAM_DAY
+          if (cv_meta.has_channel_day && cv_meta.channel_day.sharpness_valid)
+            {
+              ctx->cv_meta.sharpness_level0
+                = cv_meta.channel_day.sharpness_level0;
+              ctx->cv_meta.sharpness_level3_count = level3_ctx.count;
+              ctx->cv_meta.sharpness_valid        = true;
+              LOG_DEBUG("CvMeta day: sharpness=%.3f grid=%d",
+                        ctx->cv_meta.sharpness_level0,
+                        ctx->cv_meta.sharpness_level3_count);
+            }
+#endif
+#ifdef OSD_STREAM_THERMAL
+          if (cv_meta.has_channel_heat && cv_meta.channel_heat.sharpness_valid)
+            {
+              ctx->cv_meta.sharpness_level0
+                = cv_meta.channel_heat.sharpness_level0;
+              ctx->cv_meta.sharpness_level3_count = level3_ctx.count;
+              ctx->cv_meta.sharpness_valid        = true;
+              LOG_DEBUG("CvMeta heat: sharpness=%.3f grid=%d",
+                        ctx->cv_meta.sharpness_level0,
+                        ctx->cv_meta.sharpness_level3_count);
+            }
+#endif
+        }
+      else
+        {
+          LOG_WARN("Failed to decode CvMeta payload");
+        }
+    }
+  else if (cb_ctx.matched_type == OPAQUE_TYPE_DETECTIONS)
+    {
+      // Wire detections callback
+      detections_ctx_t det_ctx = { .ctx = ctx };
+      ctx->detections.count    = 0;
+
+#ifdef OSD_STREAM_DAY
+      ser_ObjectDetectionsDay det_msg = ser_ObjectDetectionsDay_init_zero;
+      det_msg.detections.funcs.decode = detections_decode_callback;
+      det_msg.detections.arg          = &det_ctx;
+
+      if (pb_decode(&payload_stream, ser_ObjectDetectionsDay_fields, &det_msg))
+        {
+          ctx->detections.status = (int)det_msg.status;
+          ctx->detections.valid  = true;
+          LOG_DEBUG("ObjectDetectionsDay: status=%d count=%d",
+                    ctx->detections.status, ctx->detections.count);
+        }
+      else
+        {
+          LOG_WARN("Failed to decode ObjectDetectionsDay payload");
+        }
+#endif
+
+#ifdef OSD_STREAM_THERMAL
+      ser_ObjectDetectionsHeat det_msg = ser_ObjectDetectionsHeat_init_zero;
+      det_msg.detections.funcs.decode  = detections_decode_callback;
+      det_msg.detections.arg           = &det_ctx;
+
+      if (pb_decode(&payload_stream, ser_ObjectDetectionsHeat_fields, &det_msg))
+        {
+          ctx->detections.status = (int)det_msg.status;
+          ctx->detections.valid  = true;
+          LOG_DEBUG("ObjectDetectionsHeat: status=%d count=%d",
+                    ctx->detections.status, ctx->detections.count);
+        }
+      else
+        {
+          LOG_WARN("Failed to decode ObjectDetectionsHeat payload");
+        }
+#endif
+    }
 
   return true;
 }
@@ -310,7 +517,11 @@ decode_proto_state(osd_context_t *ctx, ser_JonGUIState *pb_state)
       return false;
     }
 
-  // Wire up callback for opaque_payloads to extract OsdClientMetadata
+  // Reset per-frame CV data (will be repopulated if payloads are present)
+  ctx->cv_meta.sharpness_valid = false;
+  ctx->detections.valid        = false;
+
+  // Wire up callback for opaque_payloads to extract opaque payloads
   pb_state->opaque_payloads.funcs.decode = opaque_payloads_decode_callback;
   pb_state->opaque_payloads.arg          = ctx;
 
@@ -551,6 +762,10 @@ render_widgets(ser_JonGUIState *proto_state)
 
   // Variant info (needs proto for state time display)
   changed |= variant_info_render(&g_osd_ctx, proto_state);
+
+  // CV widgets (render with or without proto, data comes from opaque payloads)
+  changed |= sharpness_heatmap_render(&g_osd_ctx, proto_state);
+  changed |= detections_render(&g_osd_ctx, proto_state);
 
   return changed;
 }

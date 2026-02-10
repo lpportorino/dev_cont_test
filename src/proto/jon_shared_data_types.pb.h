@@ -238,7 +238,7 @@ typedef enum _ser_JonGuiDataTrackedObject_TrackingState
   ser_JonGuiDataTrackedObject_TrackingState_TRACKING_STATE_PREDICTED
   = 3, /* Temporarily lost, using prediction */
   ser_JonGuiDataTrackedObject_TrackingState_TRACKING_STATE_LOST
-  = 4  /* Lost track */
+  = 4 /* Lost track */
 } ser_JonGuiDataTrackedObject_TrackingState;
 
 /* Struct definitions */
@@ -316,11 +316,11 @@ typedef struct _ser_JonGuiDataQuaternion
 typedef struct _ser_JonGuiDataTransform3D
 {
   bool has_position;
-  ser_JonGuiDataVector3 position;         /* meters */
+  ser_JonGuiDataVector3 position; /* meters */
   bool has_orientation;
-  ser_JonGuiDataQuaternion orientation;   /* unit quaternion */
+  ser_JonGuiDataQuaternion orientation; /* unit quaternion */
   bool has_linear_velocity;
-  ser_JonGuiDataVector3 linear_velocity;  /* m/s */
+  ser_JonGuiDataVector3 linear_velocity; /* m/s */
   bool has_angular_velocity;
   ser_JonGuiDataVector3 angular_velocity; /* rad/s */
 } ser_JonGuiDataTransform3D;
@@ -532,14 +532,8 @@ extern "C"
 
 
 /* Initializer values for message structs */
-#define ser_JonGuiDataMeteo_init_default \
-  {                                      \
-    0, 0, 0                              \
-  }
-#define ser_JonOpaquePayloadVersion_init_default \
-  {                                              \
-    0, 0, 0                                      \
-  }
+#define ser_JonGuiDataMeteo_init_default { 0, 0, 0 }
+#define ser_JonOpaquePayloadVersion_init_default { 0, 0, 0 }
 #define ser_JonOpaquePayload_init_default                                \
   {                                                                      \
     { { NULL }, NULL }, false, ser_JonOpaquePayloadVersion_init_default, \
@@ -547,43 +541,24 @@ extern "C"
       { NULL }, NULL                                                     \
     }                                                                    \
   }
-#define ser_JonGuiDataROI_init_default \
-  {                                    \
-    0, 0, 0, 0                         \
-  }
-#define ser_JonGuiDataSharpness_init_default \
-  {                                          \
-    0, 0, 0                                  \
-  }
-#define ser_JonGuiDataVector3_init_default \
-  {                                        \
-    0, 0, 0                                \
-  }
-#define ser_JonGuiDataQuaternion_init_default \
-  {                                           \
-    0, 0, 0, 0                                \
-  }
-#define ser_JonGuiDataTransform3D_init_default        \
-  {                                                   \
-    false, ser_JonGuiDataVector3_init_default, false, \
-      ser_JonGuiDataQuaternion_init_default, false,   \
-      ser_JonGuiDataVector3_init_default, false,      \
-      ser_JonGuiDataVector3_init_default              \
-  }
-#define ser_JonGuiDataTrackedObject_init_default                              \
-  {                                                                           \
-    { { NULL }, NULL }, false, ser_JonGuiDataTransform3D_init_default, false, \
-      ser_JonGuiDataROI_init_default,                                         \
-      _ser_JonGuiDataTrackedObject_TrackingState_MIN                          \
-  }
-#define ser_JonGuiDataMeteo_init_zero \
-  {                                   \
-    0, 0, 0                           \
-  }
-#define ser_JonOpaquePayloadVersion_init_zero \
-  {                                           \
-    0, 0, 0                                   \
-  }
+#define ser_JonGuiDataROI_init_default { 0, 0, 0, 0 }
+#define ser_JonGuiDataSharpness_init_default { 0, 0, 0 }
+#define ser_JonGuiDataVector3_init_default { 0, 0, 0 }
+#define ser_JonGuiDataQuaternion_init_default { 0, 0, 0, 0 }
+#define ser_JonGuiDataTransform3D_init_default    \
+  { false, ser_JonGuiDataVector3_init_default,    \
+    false, ser_JonGuiDataQuaternion_init_default, \
+    false, ser_JonGuiDataVector3_init_default,    \
+    false, ser_JonGuiDataVector3_init_default }
+#define ser_JonGuiDataTrackedObject_init_default \
+  { { { NULL }, NULL },                          \
+    false,                                       \
+    ser_JonGuiDataTransform3D_init_default,      \
+    false,                                       \
+    ser_JonGuiDataROI_init_default,              \
+    _ser_JonGuiDataTrackedObject_TrackingState_MIN }
+#define ser_JonGuiDataMeteo_init_zero { 0, 0, 0 }
+#define ser_JonOpaquePayloadVersion_init_zero { 0, 0, 0 }
 #define ser_JonOpaquePayload_init_zero                                \
   {                                                                   \
     { { NULL }, NULL }, false, ser_JonOpaquePayloadVersion_init_zero, \
@@ -591,34 +566,22 @@ extern "C"
       { NULL }, NULL                                                  \
     }                                                                 \
   }
-#define ser_JonGuiDataROI_init_zero \
-  {                                 \
-    0, 0, 0, 0                      \
-  }
-#define ser_JonGuiDataSharpness_init_zero \
-  {                                       \
-    0, 0, 0                               \
-  }
-#define ser_JonGuiDataVector3_init_zero \
-  {                                     \
-    0, 0, 0                             \
-  }
-#define ser_JonGuiDataQuaternion_init_zero \
-  {                                        \
-    0, 0, 0, 0                             \
-  }
-#define ser_JonGuiDataTransform3D_init_zero                                   \
-  {                                                                           \
-    false, ser_JonGuiDataVector3_init_zero, false,                            \
-      ser_JonGuiDataQuaternion_init_zero, false,                              \
-      ser_JonGuiDataVector3_init_zero, false, ser_JonGuiDataVector3_init_zero \
-  }
-#define ser_JonGuiDataTrackedObject_init_zero                              \
-  {                                                                        \
-    { { NULL }, NULL }, false, ser_JonGuiDataTransform3D_init_zero, false, \
-      ser_JonGuiDataROI_init_zero,                                         \
-      _ser_JonGuiDataTrackedObject_TrackingState_MIN                       \
-  }
+#define ser_JonGuiDataROI_init_zero { 0, 0, 0, 0 }
+#define ser_JonGuiDataSharpness_init_zero { 0, 0, 0 }
+#define ser_JonGuiDataVector3_init_zero { 0, 0, 0 }
+#define ser_JonGuiDataQuaternion_init_zero { 0, 0, 0, 0 }
+#define ser_JonGuiDataTransform3D_init_zero    \
+  { false, ser_JonGuiDataVector3_init_zero,    \
+    false, ser_JonGuiDataQuaternion_init_zero, \
+    false, ser_JonGuiDataVector3_init_zero,    \
+    false, ser_JonGuiDataVector3_init_zero }
+#define ser_JonGuiDataTrackedObject_init_zero \
+  { { { NULL }, NULL },                       \
+    false,                                    \
+    ser_JonGuiDataTransform3D_init_zero,      \
+    false,                                    \
+    ser_JonGuiDataROI_init_zero,              \
+    _ser_JonGuiDataTrackedObject_TrackingState_MIN }
 
 /* Field tags (for use in manual encoding/decoding) */
 #define ser_JonGuiDataMeteo_temperature_tag 1

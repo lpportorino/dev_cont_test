@@ -140,6 +140,28 @@ typedef struct
   char moon_back_svg_path[256];  // Moon behind horizon
 } celestial_indicators_config_t;
 
+// Sharpness heatmap widget configuration
+typedef struct
+{
+  bool enabled;
+  int pos_x;
+  int pos_y;
+  int cell_size;   // Pixels per cell
+  bool show_label; // "Sharp: 0.XXX" above grid
+  int label_font_size;
+} sharpness_heatmap_config_t;
+
+// YOLO detections overlay configuration
+typedef struct
+{
+  bool enabled;
+  uint32_t color;       // Default box color (internal ARGB)
+  float box_thickness;  // Outline px
+  bool per_class_color; // Cycle 8-color palette by class_id
+  int label_font_size;
+  float min_confidence; // Display threshold [0.0-1.0]
+} detections_config_t;
+
 // Full OSD configuration
 typedef struct
 {
@@ -149,6 +171,8 @@ typedef struct
   variant_info_config_t variant_info;
   navball_config_t navball;
   celestial_indicators_config_t celestial_indicators;
+  sharpness_heatmap_config_t sharpness_heatmap;
+  detections_config_t detections;
 } osd_config_t;
 
 #endif // OSD_CONFIG_H

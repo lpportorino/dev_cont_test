@@ -35,16 +35,32 @@ extern "C"
 #endif
 
 /* Initializer values for message structs */
-#define ser_JonGuiDataGps_init_default                               \
-  {                                                                  \
-    0, 0, 0, 0, 0, 0, _ser_JonGuiDataGpsFixType_MIN, 0, 0, 0, false, \
-      ser_JonGuiDataMeteo_init_default                               \
-  }
-#define ser_JonGuiDataGps_init_zero                                  \
-  {                                                                  \
-    0, 0, 0, 0, 0, 0, _ser_JonGuiDataGpsFixType_MIN, 0, 0, 0, false, \
-      ser_JonGuiDataMeteo_init_zero                                  \
-  }
+#define ser_JonGuiDataGps_init_default \
+  { 0,                                 \
+    0,                                 \
+    0,                                 \
+    0,                                 \
+    0,                                 \
+    0,                                 \
+    _ser_JonGuiDataGpsFixType_MIN,     \
+    0,                                 \
+    0,                                 \
+    0,                                 \
+    false,                             \
+    ser_JonGuiDataMeteo_init_default }
+#define ser_JonGuiDataGps_init_zero \
+  { 0,                              \
+    0,                              \
+    0,                              \
+    0,                              \
+    0,                              \
+    0,                              \
+    _ser_JonGuiDataGpsFixType_MIN,  \
+    0,                              \
+    0,                              \
+    0,                              \
+    false,                          \
+    ser_JonGuiDataMeteo_init_zero }
 
 /* Field tags (for use in manual encoding/decoding) */
 #define ser_JonGuiDataGps_longitude_tag 1
