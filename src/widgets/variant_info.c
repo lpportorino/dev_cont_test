@@ -247,7 +247,7 @@ variant_info_render(osd_context_t *ctx, const osd_state_t *state)
   {
     const char *key;
     char value[128];
-  } items[23]; // max capacity (18 base + 4 day camera params)
+  } items[24]; // max capacity (18 base + 5 day camera params + 1 spare)
   int item_count = 0;
 
   // Draw counter (increments each state update/render cycle)
@@ -447,6 +447,19 @@ variant_info_render(osd_context_t *ctx, const osd_state_t *state)
         }
       item_count++;
 
+      items[item_count].key = "Exposure";
+      if (cam_day.has_exposure)
+        {
+          snprintf(items[item_count].value, sizeof(items[item_count].value),
+                   "%.3f", cam_day.exposure);
+        }
+      else
+        {
+          snprintf(items[item_count].value, sizeof(items[item_count].value),
+                   "N/A");
+        }
+      item_count++;
+
       items[item_count].key = "Iris";
       snprintf(items[item_count].value, sizeof(items[item_count].value),
                "%.3f [%s]", cam_day.iris_pos, cam_day.auto_iris ? "A" : "M");
@@ -465,6 +478,10 @@ variant_info_render(osd_context_t *ctx, const osd_state_t *state)
   else
     {
       items[item_count].key = "Gain";
+      snprintf(items[item_count].value, sizeof(items[item_count].value), "N/A");
+      item_count++;
+
+      items[item_count].key = "Exposure";
       snprintf(items[item_count].value, sizeof(items[item_count].value), "N/A");
       item_count++;
 
