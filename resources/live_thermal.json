@@ -75,7 +75,7 @@
   "sharpness_heatmap": {
     "enabled": true,
     "position_x": 418,
-    "position_y": 648,
+    "position_y": 584,
     "cell_size": 8,
     "show_label": true,
     "label_font_size": 12

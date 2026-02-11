@@ -247,17 +247,21 @@ variant_info_render(osd_context_t *ctx, const osd_state_t *state)
   {
     const char *key;
     char value[128];
-  } items[21];
+  } items[24]; // max capacity (18 base + 5 day camera params)
+  int item_count = 0;
 
   // Draw counter (increments each state update/render cycle)
-  snprintf(items[0].value, sizeof(items[0].value), "%u", ctx->frame_count);
-  items[0].key = "Draw Count";
+  items[item_count].key = "Draw Count";
+  snprintf(items[item_count].value, sizeof(items[item_count].value), "%u",
+           ctx->frame_count);
+  item_count++;
 
   // State timing info
   uint64_t monotonic_us = osd_state_get_monotonic_time_us(state);
-  snprintf(items[1].value, sizeof(items[1].value), "%" PRIu64 " us",
-           monotonic_us);
-  items[1].key = "State Time";
+  items[item_count].key = "State Time";
+  snprintf(items[item_count].value, sizeof(items[item_count].value),
+           "%" PRIu64 " us", monotonic_us);
+  item_count++;
 
   // Frame timing delta (shows frame age relative to state time)
 #ifdef OSD_STREAM_THERMAL
@@ -267,6 +271,7 @@ variant_info_render(osd_context_t *ctx, const osd_state_t *state)
   uint64_t frame_us       = osd_state_get_frame_monotonic_day_us(state);
   const char *frame_label = "Day Frame dt";
 #endif
+  items[item_count].key = frame_label;
   if (frame_us > 0 && monotonic_us > 0)
     {
       // Delta in microseconds (positive = frame is older than state)
@@ -283,82 +288,85 @@ variant_info_render(osd_context_t *ctx, const osd_state_t *state)
         {
           // Zero-padded fixed-width format for stable display
           // Sign + zero-pad ensures consistent width regardless of font
-          snprintf(items[2].value, sizeof(items[2].value),
+          snprintf(items[item_count].value, sizeof(items[item_count].value),
                    "%+08.2f (avg %+08.2f std %07.2f n=%03d)", delta_ms, avg_ms,
                    std_ms, sample_count);
         }
       else
         {
-          snprintf(items[2].value, sizeof(items[2].value), "%+08.2f ms",
-                   delta_ms);
+          snprintf(items[item_count].value, sizeof(items[item_count].value),
+                   "%+08.2f ms", delta_ms);
         }
     }
   else
     {
-      snprintf(items[2].value, sizeof(items[2].value), "N/A");
+      snprintf(items[item_count].value, sizeof(items[item_count].value), "N/A");
     }
-  items[2].key = frame_label;
+  item_count++;
 
-  snprintf(items[3].value, sizeof(items[3].value), "%ux%u", ctx->width,
-           ctx->height);
-  items[3].key = "Resolution";
+  items[item_count].key = "Resolution";
+  snprintf(items[item_count].value, sizeof(items[item_count].value), "%ux%u",
+           ctx->width, ctx->height);
+  item_count++;
 
 #ifdef OSD_MODE_LIVE
-  snprintf(items[4].value, sizeof(items[4].value), "Live");
+  items[item_count].key = "Mode";
+  snprintf(items[item_count].value, sizeof(items[item_count].value), "Live");
 #else
-  snprintf(items[4].value, sizeof(items[4].value), "Recording");
+  items[item_count].key = "Mode";
+  snprintf(items[item_count].value, sizeof(items[item_count].value),
+           "Recording");
 #endif
-  items[4].key = "Mode";
+  item_count++;
 
-  snprintf(items[5].value, sizeof(items[5].value), "%s",
+  items[item_count].key = "Crosshair";
+  snprintf(items[item_count].value, sizeof(items[item_count].value), "%s",
            ctx->config.crosshair.enabled ? "Enabled" : "Disabled");
-  items[5].key = "Crosshair";
+  item_count++;
 
-  snprintf(items[6].value, sizeof(items[6].value), "%s",
+  items[item_count].key = "Timestamp";
+  snprintf(items[item_count].value, sizeof(items[item_count].value), "%s",
            ctx->config.timestamp.enabled ? "Enabled" : "Disabled");
-  items[6].key = "Timestamp";
+  item_count++;
 
-  snprintf(items[7].value, sizeof(items[7].value), "%s",
+  items[item_count].key = "Speed Indicators";
+  snprintf(items[item_count].value, sizeof(items[item_count].value), "%s",
            ctx->config.speed_indicators.enabled ? "Enabled" : "Disabled");
-  items[7].key = "Speed Indicators";
-
-  snprintf(items[8].value, sizeof(items[8].value), "%s",
-           ctx->config.navball.enabled ? "Enabled" : "Disabled");
-  items[8].key = "Navball";
-
-  snprintf(items[9].value, sizeof(items[9].value), "%d, %d",
-           ctx->config.navball.position_x, ctx->config.navball.position_y);
-  items[9].key = "Navball Pos";
-
-  snprintf(items[10].value, sizeof(items[10].value), "%dpx",
-           ctx->config.navball.size);
-  items[10].key = "Navball Size";
+  item_count++;
 
   // Speed debug info (always shown)
   // Speeds from proto are normalized (-1.0 to 1.0)
   // Display both normalized and degrees (normalized * 35.0)
-  snprintf(items[11].value, sizeof(items[11].value), "%s",
+  items[item_count].key = "Is Moving";
+  snprintf(items[item_count].value, sizeof(items[item_count].value), "%s",
            is_moving ? "YES" : "NO");
-  items[11].key = "Is Moving";
+  item_count++;
 
-  snprintf(items[12].value, sizeof(items[12].value), "%.3f (%.1f deg)",
-           az_speed, az_speed * 35.0);
-  items[12].key = "Az Speed";
+  items[item_count].key = "Az Speed";
+  snprintf(items[item_count].value, sizeof(items[item_count].value),
+           "%.3f (%.1f deg)", az_speed, az_speed * 35.0);
+  item_count++;
 
-  snprintf(items[13].value, sizeof(items[13].value), "%.3f (%.1f deg)",
-           el_speed, el_speed * 35.0);
-  items[13].key = "El Speed";
+  items[item_count].key = "El Speed";
+  snprintf(items[item_count].value, sizeof(items[item_count].value),
+           "%.3f (%.1f deg)", el_speed, el_speed * 35.0);
+  item_count++;
 
   // Build info (compile-time constants)
-  snprintf(items[14].value, sizeof(items[14].value), "%s", OSD_VERSION);
-  items[14].key = "Version";
+  items[item_count].key = "Version";
+  snprintf(items[item_count].value, sizeof(items[item_count].value), "%s",
+           OSD_VERSION);
+  item_count++;
 
-  snprintf(items[15].value, sizeof(items[15].value), "%s", OSD_GIT_COMMIT);
-  items[15].key = "Commit";
+  items[item_count].key = "Commit";
+  snprintf(items[item_count].value, sizeof(items[item_count].value), "%s",
+           OSD_GIT_COMMIT);
+  item_count++;
 
-  snprintf(items[16].value, sizeof(items[16].value), "%s %s UTC",
-           OSD_BUILD_DATE, OSD_BUILD_TIME);
-  items[16].key = "Built";
+  items[item_count].key = "Built";
+  snprintf(items[item_count].value, sizeof(items[item_count].value),
+           "%s %s UTC", OSD_BUILD_DATE, OSD_BUILD_TIME);
+  item_count++;
 
   // Client metadata (canvas info from frontend via opaque payload)
   // Compact display with fixed-width padding to prevent value jitter
@@ -366,55 +374,134 @@ variant_info_render(osd_context_t *ctx, const osd_state_t *state)
   if (osd_state_get_client_metadata(ctx, &client_meta) && client_meta.valid)
     {
       // Canvas: 1920x1080 @2.00x -> 1920x1080
-      snprintf(items[17].value, sizeof(items[17].value),
+      items[item_count].key = "Canvas";
+      snprintf(items[item_count].value, sizeof(items[item_count].value),
                "%04ux%04u @%04.2fx -> %04ux%04u", client_meta.canvas_width_px,
                client_meta.canvas_height_px, client_meta.device_pixel_ratio,
                client_meta.osd_buffer_width, client_meta.osd_buffer_height);
-      items[17].key = "Canvas";
+      item_count++;
 
       // Proxy: (+0.00,+0.00) 1.00x1.00 s:01.00
-      snprintf(items[18].value, sizeof(items[18].value),
+      items[item_count].key = "Proxy";
+      snprintf(items[item_count].value, sizeof(items[item_count].value),
                "(%+05.2f,%+05.2f) %04.2fx%04.2f s:%05.2f",
                client_meta.video_proxy_ndc_x, client_meta.video_proxy_ndc_y,
                client_meta.video_proxy_ndc_width,
                client_meta.video_proxy_ndc_height, client_meta.scale_factor);
-      items[18].key = "Proxy";
+      item_count++;
 
       // Theme: Default H:120 C:0.10 L:050
-      snprintf(items[19].value, sizeof(items[19].value),
+      items[item_count].key = "Theme";
+      snprintf(items[item_count].value, sizeof(items[item_count].value),
                "%-7s H:%03.0f C:%04.2f L:%03.0f",
                client_meta.is_sharp_mode ? "Sharp" : "Default",
                client_meta.theme_hue, client_meta.theme_chroma,
                client_meta.theme_lightness);
-      items[19].key = "Theme";
+      item_count++;
     }
   else
     {
-      snprintf(items[17].value, sizeof(items[17].value), "N/A");
-      items[17].key = "Canvas";
+      items[item_count].key = "Canvas";
+      snprintf(items[item_count].value, sizeof(items[item_count].value), "N/A");
+      item_count++;
 
-      snprintf(items[18].value, sizeof(items[18].value), "N/A");
-      items[18].key = "Proxy";
+      items[item_count].key = "Proxy";
+      snprintf(items[item_count].value, sizeof(items[item_count].value), "N/A");
+      item_count++;
 
-      snprintf(items[19].value, sizeof(items[19].value), "N/A");
-      items[19].key = "Theme";
+      items[item_count].key = "Theme";
+      snprintf(items[item_count].value, sizeof(items[item_count].value), "N/A");
+      item_count++;
     }
 
   // Sharpness score from CvMeta opaque payload
+  items[item_count].key = "Sharpness";
   osd_sharpness_data_t sharp_data;
   if (osd_state_get_sharpness(ctx, &sharp_data) && sharp_data.valid)
     {
-      snprintf(items[20].value, sizeof(items[20].value), "%.3f",
+      snprintf(items[item_count].value, sizeof(items[item_count].value), "%.3f",
                sharp_data.global_score);
     }
   else
     {
-      snprintf(items[20].value, sizeof(items[20].value), "N/A");
+      snprintf(items[item_count].value, sizeof(items[item_count].value), "N/A");
     }
-  items[20].key = "Sharpness";
+  item_count++;
+
+#ifdef OSD_STREAM_DAY
+  // Day camera parameters
+  osd_camera_day_data_t cam_day;
+  if (osd_state_get_camera_day(state, &cam_day) && cam_day.valid)
+    {
+      items[item_count].key = "Gain";
+      if (cam_day.has_sensor_gain)
+        {
+          snprintf(items[item_count].value, sizeof(items[item_count].value),
+                   "%.3f [%s]", cam_day.sensor_gain,
+                   cam_day.auto_gain ? "A" : "M");
+        }
+      else
+        {
+          snprintf(items[item_count].value, sizeof(items[item_count].value),
+                   "N/A");
+        }
+      item_count++;
+
+      items[item_count].key = "Iris";
+      snprintf(items[item_count].value, sizeof(items[item_count].value),
+               "%.3f [%s]", cam_day.iris_pos,
+               cam_day.auto_iris ? "A" : "M");
+      item_count++;
+
+      items[item_count].key = "Focus";
+      snprintf(items[item_count].value, sizeof(items[item_count].value), "%.3f",
+               cam_day.focus_pos);
+      item_count++;
+
+      items[item_count].key = "Zoom";
+      snprintf(items[item_count].value, sizeof(items[item_count].value), "%.3f",
+               cam_day.zoom_pos);
+      item_count++;
+
+      items[item_count].key = "Exp";
+      if (cam_day.has_exposure)
+        {
+          snprintf(items[item_count].value, sizeof(items[item_count].value),
+                   "%.3f", cam_day.exposure);
+        }
+      else
+        {
+          snprintf(items[item_count].value, sizeof(items[item_count].value),
+                   "N/A");
+        }
+      item_count++;
+    }
+  else
+    {
+      items[item_count].key = "Gain";
+      snprintf(items[item_count].value, sizeof(items[item_count].value), "N/A");
+      item_count++;
+
+      items[item_count].key = "Iris";
+      snprintf(items[item_count].value, sizeof(items[item_count].value), "N/A");
+      item_count++;
+
+      items[item_count].key = "Focus";
+      snprintf(items[item_count].value, sizeof(items[item_count].value), "N/A");
+      item_count++;
+
+      items[item_count].key = "Zoom";
+      snprintf(items[item_count].value, sizeof(items[item_count].value), "N/A");
+      item_count++;
+
+      items[item_count].key = "Exp";
+      snprintf(items[item_count].value, sizeof(items[item_count].value), "N/A");
+      item_count++;
+    }
+#endif
 
   // Render each config item
-  for (size_t i = 0; i < sizeof(items) / sizeof(items[0]); i++)
+  for (int i = 0; i < item_count; i++)
     {
       snprintf(buffer, sizeof(buffer), "%s: %s", items[i].key, items[i].value);
       text_render_with_outline(&fb, &ctx->font_variant_info, buffer, x, y,
@@ -425,13 +512,6 @@ variant_info_render(osd_context_t *ctx, const osd_state_t *state)
 
       y += line_height;
     }
-
-  // Render redraw warning at bottom
-  text_render_with_outline(&fb, &ctx->font_variant_info, "[FORCES REPAINTS]", x,
-                           y, color,
-                           0xFF000000, // Black outline
-                           font_size,  //
-                           VARIANT_INFO_OUTLINE_THICKNESS);
 
   return true;
 }

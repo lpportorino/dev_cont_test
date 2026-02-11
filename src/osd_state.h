@@ -164,6 +164,29 @@ bool osd_state_get_detections(const osd_context_t *ctx,
                               osd_detections_data_t *out);
 
 // ════════════════════════════════════════════════════════════
+// CAMERA DAY DATA (for debug overlay, day variants only)
+// ════════════════════════════════════════════════════════════
+
+typedef struct
+{
+  double sensor_gain; // Normalized 0.0-1.0 (only valid when has_sensor_gain)
+  double iris_pos;    // Iris position
+  double focus_pos;   // Focus position
+  double zoom_pos;    // Zoom position
+  double exposure;    // Normalized 0.0-1.0 (only valid when has_exposure)
+  bool auto_gain;     // Auto gain flag (only meaningful when has_sensor_gain)
+  bool auto_iris;     // Auto iris flag
+  bool has_sensor_gain;
+  bool has_exposure;
+  bool valid;
+} osd_camera_day_data_t;
+
+// Get day camera parameters from state
+// Returns true if camera_day data is present
+bool osd_state_get_camera_day(const osd_state_t *state,
+                              osd_camera_day_data_t *out);
+
+// ════════════════════════════════════════════════════════════
 // STATE TIMING DATA (for debug overlay)
 // ════════════════════════════════════════════════════════════
 

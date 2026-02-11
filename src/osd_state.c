@@ -162,6 +162,46 @@ osd_state_get_frame_monotonic_heat_us(const osd_state_t *state)
 }
 
 // ════════════════════════════════════════════════════════════
+// CAMERA DAY DATA
+// ════════════════════════════════════════════════════════════
+
+bool
+osd_state_get_camera_day(const osd_state_t *state, osd_camera_day_data_t *out)
+{
+  if (!out)
+    return false;
+
+  out->valid          = false;
+  out->sensor_gain    = 0.0;
+  out->iris_pos       = 0.0;
+  out->focus_pos      = 0.0;
+  out->zoom_pos       = 0.0;
+  out->exposure       = 0.0;
+  out->auto_gain      = false;
+  out->auto_iris      = false;
+  out->has_sensor_gain = false;
+  out->has_exposure   = false;
+
+  if (!state || !state->has_camera_day)
+    return false;
+
+  const ser_JonGuiDataCameraDay *cam = &state->camera_day;
+
+  out->sensor_gain     = cam->sensor_gain;
+  out->iris_pos        = cam->iris_pos;
+  out->focus_pos       = cam->focus_pos;
+  out->zoom_pos        = cam->zoom_pos;
+  out->exposure        = cam->exposure;
+  out->auto_gain       = cam->auto_gain;
+  out->auto_iris       = cam->auto_iris;
+  out->has_sensor_gain = cam->has_sensor_gain;
+  out->has_exposure    = cam->has_exposure;
+  out->valid           = true;
+
+  return true;
+}
+
+// ════════════════════════════════════════════════════════════
 // SHARPNESS DATA
 // ════════════════════════════════════════════════════════════
 
