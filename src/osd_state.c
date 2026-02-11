@@ -171,16 +171,16 @@ osd_state_get_camera_day(const osd_state_t *state, osd_camera_day_data_t *out)
   if (!out)
     return false;
 
-  out->valid          = false;
-  out->sensor_gain    = 0.0;
-  out->iris_pos       = 0.0;
-  out->focus_pos      = 0.0;
-  out->zoom_pos       = 0.0;
-  out->exposure       = 0.0;
-  out->auto_gain      = false;
-  out->auto_iris      = false;
+  out->valid           = false;
+  out->sensor_gain     = 0.0;
+  out->iris_pos        = 0.0;
+  out->focus_pos       = 0.0;
+  out->zoom_pos        = 0.0;
+  out->exposure        = 0.0;
+  out->auto_gain       = false;
+  out->auto_iris       = false;
   out->has_sensor_gain = false;
-  out->has_exposure   = false;
+  out->has_exposure    = false;
 
   if (!state || !state->has_camera_day)
     return false;
