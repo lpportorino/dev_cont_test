@@ -203,6 +203,18 @@ Note: `variant_info_render()` uses `const osd_state_t *state` since it doesn't m
 - **Frame Delta**: Shows latency between frame capture time and state time in milliseconds (variant-specific: Day or Heat)
 - **Always returns true**: When enabled, forces texture re-upload every frame (draw count changes each render)
 
+### ROI Overlay (`src/widgets/roi.c`)
+- Colored bounding box overlays for active ROI (Region of Interest) regions
+- 4 ROI types with distinct colors: FOCUS (green), TRACK (yellow), ZOOM (magenta), FX (cyan)
+- Data source: `JonGuiDataCV` proto state fields (NOT opaque payloads like detections)
+- State accessor: `osd_state_get_rois()` reads `cv.roi_focus_day` / `cv.roi_focus_heat` etc.
+- Stream-aware via compile-time `OSD_STREAM_THERMAL` define (selects day vs heat ROIs)
+- NDC coordinates (-1.0 to 1.0) converted to pixel space: `px = (ndc + 1.0) / 2.0 * width`
+- Each ROI drawn as rectangle outline + labeled tag with semi-transparent background
+- Only renders when ROI data is present in state (no visual noise otherwise)
+- Disabled in PiP views via `pip_override.json`
+- Config: `roi.enabled`, `roi.box_thickness`, `roi.label_font_size`, `roi.color_focus/track/zoom/fx`
+
 ## Protobuf Integration
 
 **Git Submodules** (auto-updated by protogen CI):
@@ -217,6 +229,7 @@ Note: `variant_info_render()` uses `const osd_state_t *state` since it doesn't m
 - `rotary` - Speed indicators: azimuth_speed, elevation_speed (normalized -1.0 to 1.0), is_moving flag
 - `time` - Timestamp display (Unix epoch)
 - `rec_osd` - Crosshair offsets: day_crosshair_offset_*, heat_crosshair_offset_*
+- `cv` - ROI overlays: roi_focus_day/heat, roi_track_day/heat, roi_zoom_day/heat, roi_fx_day/heat (NDC coords, tags 40-53)
 
 ## Configuration (JSON)
 
@@ -253,6 +266,7 @@ Key settings:
 - Crosshair offset: `rec_osd.day_crosshair_offset_*` / `rec_osd.heat_crosshair_offset_*`
 - Timestamp: `time.timestamp`
 - Frame timing: `system_monotonic_time_us` / `frame_monotonic_day_us` / `frame_monotonic_heat_us`
+- ROI regions: `cv.roi_focus_day` / `cv.roi_track_day` / `cv.roi_zoom_day` / `cv.roi_fx_day` (and heat variants) — each has `{x1, y1, x2, y2}` in NDC
 
 ## Code Organization
 
@@ -263,7 +277,7 @@ src/
 ├── config_json.{c,h}    # JSON configuration parser
 ├── core/                # Framebuffer, context
 ├── rendering/           # Text, blending, primitives
-├── widgets/             # Crosshair, navball, timestamp, celestial
+├── widgets/             # Crosshair, navball, timestamp, celestial, ROI, detections
 ├── utils/               # Math, resource lookup, celestial position
 └── proto/               # Protobuf (27 files + nanopb)
 
@@ -357,6 +371,9 @@ CLion 2025.3+ may hang at "Setting global Git config" during dev container setup
 2. Fallback git config pre-set in Dockerfile
 3. Pre-created `/.jbdevcontainer/config/JetBrains` directory
 
+**Submodule Portability**:
+The `.git/modules/` mount uses dynamic resolution via `initializeCommand` (runs `git rev-parse --git-dir` and creates a symlink at `/tmp/dc-gitmod/dev_cont_test`). This works regardless of nesting depth — whether dev_cont_test is a direct submodule of meta_web or a sub-sub-module of jettison. **Never hardcode `.git/modules/` paths** in devcontainer.json mounts.
+
 **Docker BuildKit Note**:
 If using a custom buildx builder with `docker-container` driver, switch to default for local builds:
 ```bash
@@ -431,7 +448,9 @@ The `resources/pip_override.json` file contains config overrides for Picture-in-
   "speed_indicators": { "enabled": false },
   "timestamp": { "enabled": false },
   "navball": { "enabled": false },
-  "celestial_indicators": { "enabled": false }
+  "celestial_indicators": { "enabled": false },
+  "detections": { "enabled": false },
+  "roi": { "enabled": false }
 }
 ```
 
