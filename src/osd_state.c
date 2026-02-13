@@ -6,6 +6,8 @@
 #include "core/osd_context.h"
 #include "proto/jon_shared_data.pb.h"
 
+#include <string.h>
+
 // ════════════════════════════════════════════════════════════
 // ORIENTATION DATA
 // ════════════════════════════════════════════════════════════
@@ -159,6 +161,82 @@ osd_state_get_frame_monotonic_heat_us(const osd_state_t *state)
     return 0;
 
   return state->frame_monotonic_heat_us;
+}
+
+// ════════════════════════════════════════════════════════════
+// ROI DATA
+// ════════════════════════════════════════════════════════════
+
+bool
+osd_state_get_rois(const osd_state_t *state,
+                   bool is_thermal_stream,
+                   osd_roi_data_t *out)
+{
+  if (!out)
+    return false;
+
+  memset(out, 0, sizeof(*out));
+
+  if (!state || !state->has_cv)
+    return false;
+
+  const ser_JonGuiDataCV *cv = &state->cv;
+
+  if (is_thermal_stream)
+    {
+      if (cv->has_roi_focus_heat)
+        {
+          out->focus
+            = (osd_roi_t){ cv->roi_focus_heat.x1, cv->roi_focus_heat.y1,
+                           cv->roi_focus_heat.x2, cv->roi_focus_heat.y2, true };
+        }
+      if (cv->has_roi_track_heat)
+        {
+          out->track
+            = (osd_roi_t){ cv->roi_track_heat.x1, cv->roi_track_heat.y1,
+                           cv->roi_track_heat.x2, cv->roi_track_heat.y2, true };
+        }
+      if (cv->has_roi_zoom_heat)
+        {
+          out->zoom
+            = (osd_roi_t){ cv->roi_zoom_heat.x1, cv->roi_zoom_heat.y1,
+                           cv->roi_zoom_heat.x2, cv->roi_zoom_heat.y2, true };
+        }
+      if (cv->has_roi_fx_heat)
+        {
+          out->fx = (osd_roi_t){ cv->roi_fx_heat.x1, cv->roi_fx_heat.y1,
+                                 cv->roi_fx_heat.x2, cv->roi_fx_heat.y2, true };
+        }
+    }
+  else
+    {
+      if (cv->has_roi_focus_day)
+        {
+          out->focus
+            = (osd_roi_t){ cv->roi_focus_day.x1, cv->roi_focus_day.y1,
+                           cv->roi_focus_day.x2, cv->roi_focus_day.y2, true };
+        }
+      if (cv->has_roi_track_day)
+        {
+          out->track
+            = (osd_roi_t){ cv->roi_track_day.x1, cv->roi_track_day.y1,
+                           cv->roi_track_day.x2, cv->roi_track_day.y2, true };
+        }
+      if (cv->has_roi_zoom_day)
+        {
+          out->zoom
+            = (osd_roi_t){ cv->roi_zoom_day.x1, cv->roi_zoom_day.y1,
+                           cv->roi_zoom_day.x2, cv->roi_zoom_day.y2, true };
+        }
+      if (cv->has_roi_fx_day)
+        {
+          out->fx = (osd_roi_t){ cv->roi_fx_day.x1, cv->roi_fx_day.y1,
+                                 cv->roi_fx_day.x2, cv->roi_fx_day.y2, true };
+        }
+    }
+
+  out->valid = true;
+  return true;
 }
 
 // ════════════════════════════════════════════════════════════

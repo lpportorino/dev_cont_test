@@ -13,11 +13,12 @@
   "runArgs": [
     "--add-host=host.docker.internal:host-gateway"
   ],
+  "initializeCommand": ["bash", "-c", "GITDIR=$(git rev-parse --git-dir 2>/dev/null); mkdir -p /tmp/dc-gitmod; if [ -n \"$GITDIR\" ]; then ABS_GITDIR=$(cd \"$GITDIR\" && pwd) && ln -sfn \"$ABS_GITDIR\" /tmp/dc-gitmod/dev_cont_test; else mkdir -p /tmp/dc-gitmod/dev_cont_test; fi"],
   "mounts": [
     "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached",
     "source=/etc/hosts,target=/etc/hosts,type=bind,readonly",
     "source=${localEnv:SSH_AUTH_SOCK},target=/ssh-agent,type=bind",
-    "source=${localWorkspaceFolder}/../.git/modules/dev_cont_test,target=/workspaces/.git_modules,type=bind,consistency=cached"
+    "source=/tmp/dc-gitmod/dev_cont_test,target=/workspaces/.git_modules,type=bind,consistency=cached"
   ],
   "postCreateCommand": "bash .devcontainer/scripts/post-create.sh",
   "postStartCommand": "bash .devcontainer/scripts/post-start.sh",

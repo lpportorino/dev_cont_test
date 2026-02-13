@@ -162,6 +162,18 @@ typedef struct
   float min_confidence; // Display threshold [0.0-1.0]
 } detections_config_t;
 
+// ROI overlay configuration
+typedef struct
+{
+  bool enabled;
+  float box_thickness;
+  int label_font_size;
+  uint32_t color_focus;
+  uint32_t color_track;
+  uint32_t color_zoom;
+  uint32_t color_fx;
+} roi_config_t;
+
 // Full OSD configuration
 typedef struct
 {
@@ -173,6 +185,7 @@ typedef struct
   celestial_indicators_config_t celestial_indicators;
   sharpness_heatmap_config_t sharpness_heatmap;
   detections_config_t detections;
+  roi_config_t roi;
 } osd_config_t;
 
 #endif // OSD_CONFIG_H

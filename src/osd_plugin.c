@@ -28,6 +28,7 @@
 #include "widgets/crosshair.h"
 #include "widgets/detections.h"
 #include "widgets/navball.h"
+#include "widgets/roi.h"
 #include "widgets/sharpness_heatmap.h"
 #include "widgets/timestamp.h"
 #include "widgets/variant_info.h"
@@ -766,6 +767,12 @@ render_widgets(ser_JonGUIState *proto_state)
   // CV widgets (render with or without proto, data comes from opaque payloads)
   changed |= sharpness_heatmap_render(&g_osd_ctx, proto_state);
   changed |= detections_render(&g_osd_ctx, proto_state);
+
+  // ROI overlays (data from proto state CV fields)
+  if (proto_state)
+    {
+      changed |= roi_render(&g_osd_ctx, proto_state);
+    }
 
   return changed;
 }

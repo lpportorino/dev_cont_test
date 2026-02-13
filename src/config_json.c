@@ -473,6 +473,34 @@ parse_detections_config(cJSON *root, detections_config_t *config)
     = (float)get_double(detections, "min_confidence", 0.25);
 }
 
+/**
+ * Parse ROI overlay configuration
+ */
+static void
+parse_roi_config(cJSON *root, roi_config_t *config)
+{
+  cJSON *roi = cJSON_GetObjectItem(root, "roi");
+  if (!roi)
+    {
+      config->enabled         = true;
+      config->box_thickness   = 2.0f;
+      config->label_font_size = 14;
+      config->color_focus     = 0xFF00FF00;
+      config->color_track     = 0xFF00FFFF;
+      config->color_zoom      = 0xFFFF00FF;
+      config->color_fx        = 0xFFFFFF00;
+      return;
+    }
+
+  config->enabled         = get_bool(roi, "enabled", true);
+  config->box_thickness   = (float)get_double(roi, "box_thickness", 2.0);
+  config->label_font_size = get_int(roi, "label_font_size", 14);
+  config->color_focus     = get_color(roi, "color_focus", 0xFF00FF00);
+  config->color_track     = get_color(roi, "color_track", 0xFF00FFFF);
+  config->color_zoom      = get_color(roi, "color_zoom", 0xFFFF00FF);
+  config->color_fx        = get_color(roi, "color_fx", 0xFFFFFF00);
+}
+
 // ════════════════════════════════════════════════════════════
 // JSON PARSING IMPLEMENTATION
 // ════════════════════════════════════════════════════════════
@@ -503,6 +531,7 @@ config_parse_json(osd_config_t *config, const char *json_path)
   parse_celestial_indicators_config(root, &config->celestial_indicators);
   parse_sharpness_heatmap_config(root, &config->sharpness_heatmap);
   parse_detections_config(root, &config->detections);
+  parse_roi_config(root, &config->roi);
 
   // Clean up
   cJSON_Delete(root);

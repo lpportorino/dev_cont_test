@@ -314,6 +314,27 @@ build_synthetic_state (const char *variant_name, size_t *out_size)
   state.opaque_payloads.funcs.encode = encode_opaque_payloads_cb;
   state.opaque_payloads.arg = &opaque_ctx;
 
+  // ROI overlays (directly in CV proto fields, not opaque payloads)
+  state.has_cv = true;
+  if (is_day)
+    {
+      state.cv.has_roi_focus_day = true;
+      state.cv.roi_focus_day
+          = (ser_JonGuiDataROI){ .x1 = -0.3, .y1 = -0.2, .x2 = 0.3, .y2 = 0.2 };
+      state.cv.has_roi_zoom_day = true;
+      state.cv.roi_zoom_day
+          = (ser_JonGuiDataROI){ .x1 = -0.6, .y1 = -0.4, .x2 = 0.6, .y2 = 0.4 };
+    }
+  else
+    {
+      state.cv.has_roi_focus_heat = true;
+      state.cv.roi_focus_heat
+          = (ser_JonGuiDataROI){ .x1 = -0.3, .y1 = -0.2, .x2 = 0.3, .y2 = 0.2 };
+      state.cv.has_roi_track_heat = true;
+      state.cv.roi_track_heat
+          = (ser_JonGuiDataROI){ .x1 = 0.1, .y1 = -0.5, .x2 = 0.5, .y2 = -0.1 };
+    }
+
   /* --- Encode to buffer --- */
   static uint8_t state_buf[16384];
   pb_ostream_t state_stream

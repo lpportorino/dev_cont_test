@@ -201,6 +201,27 @@ synthetic_state_next_frame (synthetic_state_t *gen)
       break;
     }
 
+  // ROI overlays - animate a focus ROI that pulses in size
+  gen->state->has_cv = true;
+  {
+    float roi_scale = 0.2f + 0.1f * sinf (gen->phase * 2.0f * M_PI);
+    gen->state->cv.has_roi_focus_day = true;
+    gen->state->cv.roi_focus_day.x1 = -roi_scale;
+    gen->state->cv.roi_focus_day.y1 = -roi_scale * 0.7;
+    gen->state->cv.roi_focus_day.x2 = roi_scale;
+    gen->state->cv.roi_focus_day.y2 = roi_scale * 0.7;
+    gen->state->cv.has_roi_zoom_day = true;
+    gen->state->cv.roi_zoom_day.x1 = -0.6;
+    gen->state->cv.roi_zoom_day.y1 = -0.4;
+    gen->state->cv.roi_zoom_day.x2 = 0.6;
+    gen->state->cv.roi_zoom_day.y2 = 0.4;
+    // Heat channel gets same ROIs
+    gen->state->cv.has_roi_focus_heat = true;
+    gen->state->cv.roi_focus_heat = gen->state->cv.roi_focus_day;
+    gen->state->cv.has_roi_zoom_heat = true;
+    gen->state->cv.roi_zoom_heat = gen->state->cv.roi_zoom_day;
+  }
+
   // Update timestamp - advance 1 second per frame for visible ticking
   // At 30 FPS, 10 seconds of video = 300 seconds (5 minutes) of time advancement
   int64_t base_timestamp = 1736294400; // 2025-01-08 00:00:00 UTC

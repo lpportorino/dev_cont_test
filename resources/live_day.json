@@ -87,5 +87,14 @@
     "per_class_color": true,
     "label_font_size": 16,
     "min_confidence": 0.25
+  },
+  "roi": {
+    "enabled": true,
+    "box_thickness": 2.0,
+    "label_font_size": 14,
+    "color_focus": "#FF00FF00",
+    "color_track": "#FF00FFFF",
+    "color_zoom": "#FFFF00FF",
+    "color_fx": "#FFFFFF00"
   }
 }

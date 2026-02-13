@@ -21,5 +21,8 @@
   },
   "detections": {
     "enabled": false
+  },
+  "roi": {
+    "enabled": false
   }
 }

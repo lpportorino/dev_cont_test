@@ -164,6 +164,34 @@ bool osd_state_get_detections(const osd_context_t *ctx,
                               osd_detections_data_t *out);
 
 // ════════════════════════════════════════════════════════════
+// ROI DATA (from JonGuiDataCV in proto state)
+// ════════════════════════════════════════════════════════════
+
+// Single ROI rectangle (NDC coords -1.0 to 1.0)
+typedef struct
+{
+  double x1, y1, x2, y2;
+  bool present; // has_roi_* was true
+} osd_roi_t;
+
+// All ROIs for the current stream channel (day or heat)
+typedef struct
+{
+  osd_roi_t focus;
+  osd_roi_t track;
+  osd_roi_t zoom;
+  osd_roi_t fx;
+  bool valid; // CV data was present in proto
+} osd_roi_data_t;
+
+// Get ROI data for current stream channel from proto state
+// is_thermal_stream: selects heat vs day ROIs
+// Returns true if CV data was present
+bool osd_state_get_rois(const osd_state_t *state,
+                        bool is_thermal_stream,
+                        osd_roi_data_t *out);
+
+// ════════════════════════════════════════════════════════════
 // CAMERA DAY DATA (for debug overlay, day variants only)
 // ════════════════════════════════════════════════════════════
 
