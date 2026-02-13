@@ -331,6 +331,13 @@ opaque_payloads_decode_callback(pb_istream_t *stream,
   // Dispatch based on matched type
   if (!cb_ctx.uuid_matched || cb_ctx.payload_size == 0)
     {
+      // Rate-limited log for unmatched UUIDs
+      static int unmatched_log_counter = 0;
+      if (unmatched_log_counter++ % 300 == 0 && !cb_ctx.uuid_matched)
+        {
+          LOG_WARN("[det-debug] Unmatched opaque UUID: %s (size=%zu)",
+                   cb_ctx.uuid_buffer, cb_ctx.payload_size);
+        }
       return true;
     }
 
@@ -466,6 +473,10 @@ opaque_payloads_decode_callback(pb_istream_t *stream,
       detections_ctx_t det_ctx = { .ctx = ctx };
       ctx->detections.count    = 0;
 
+      // Rate-limited detection debug logging (every 150 frames ≈ 5s at 30Hz)
+      static int det_log_counter = 0;
+      bool det_should_log        = (det_log_counter++ % 150 == 0);
+
 #ifdef OSD_STREAM_DAY
       ser_ObjectDetectionsDay det_msg = ser_ObjectDetectionsDay_init_zero;
       det_msg.detections.funcs.decode = detections_decode_callback;
@@ -475,8 +486,23 @@ opaque_payloads_decode_callback(pb_istream_t *stream,
         {
           ctx->detections.status = (int)det_msg.status;
           ctx->detections.valid  = true;
-          LOG_DEBUG("ObjectDetectionsDay: status=%d count=%d",
-                    ctx->detections.status, ctx->detections.count);
+          if (det_should_log)
+            {
+              LOG_WARN("[det-debug] DAY: status=%d count=%d payload=%zu "
+                       "enabled=%d",
+                       ctx->detections.status, ctx->detections.count,
+                       cb_ctx.payload_size, ctx->config.detections.enabled);
+              for (int i = 0; i < ctx->detections.count && i < 3; i++)
+                {
+                  LOG_WARN(
+                    "[det-debug]   [%d] class=%d conf=%.2f "
+                    "box=(%.3f,%.3f)-(%.3f,%.3f)",
+                    i, ctx->detections.items[i].class_id,
+                    ctx->detections.items[i].confidence,
+                    ctx->detections.items[i].x1, ctx->detections.items[i].y1,
+                    ctx->detections.items[i].x2, ctx->detections.items[i].y2);
+                }
+            }
         }
       else
         {
@@ -493,8 +519,23 @@ opaque_payloads_decode_callback(pb_istream_t *stream,
         {
           ctx->detections.status = (int)det_msg.status;
           ctx->detections.valid  = true;
-          LOG_DEBUG("ObjectDetectionsHeat: status=%d count=%d",
-                    ctx->detections.status, ctx->detections.count);
+          if (det_should_log)
+            {
+              LOG_WARN("[det-debug] HEAT: status=%d count=%d payload=%zu "
+                       "enabled=%d",
+                       ctx->detections.status, ctx->detections.count,
+                       cb_ctx.payload_size, ctx->config.detections.enabled);
+              for (int i = 0; i < ctx->detections.count && i < 3; i++)
+                {
+                  LOG_WARN(
+                    "[det-debug]   [%d] class=%d conf=%.2f "
+                    "box=(%.3f,%.3f)-(%.3f,%.3f)",
+                    i, ctx->detections.items[i].class_id,
+                    ctx->detections.items[i].confidence,
+                    ctx->detections.items[i].x1, ctx->detections.items[i].y1,
+                    ctx->detections.items[i].x2, ctx->detections.items[i].y2);
+                }
+            }
         }
       else
         {
