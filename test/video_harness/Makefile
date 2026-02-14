@@ -95,10 +95,13 @@ NANOPB_SRCS = $(NANOPB_DIR)/pb_common.c \
               $(NANOPB_DIR)/jon_shared_data_camera_heat.pb.c \
               $(NANOPB_DIR)/jon_shared_data_compass_calibration.pb.c \
               $(NANOPB_DIR)/jon_shared_data_rec_osd.pb.c \
-              $(NANOPB_DIR)/jon_shared_data_day_cam_glass_heater.pb.c \
               $(NANOPB_DIR)/jon_shared_data_actual_space_time.pb.c \
               $(NANOPB_DIR)/jon_shared_data_lrf.pb.c \
-              $(NANOPB_DIR)/jon_shared_data_types.pb.c
+              $(NANOPB_DIR)/jon_shared_data_types.pb.c \
+              $(NANOPB_DIR)/jon_shared_data_power.pb.c \
+              $(NANOPB_DIR)/jon_shared_data_cv.pb.c \
+              $(NANOPB_DIR)/jon_shared_data_pmu.pb.c \
+              $(NANOPB_DIR)/jon_shared_data_heater.pb.c
 NANOPB_OBJS = $(NANOPB_SRCS:.c=.o)
 
 # Output binary

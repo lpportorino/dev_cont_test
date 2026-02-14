@@ -49,7 +49,7 @@
     "font": "liberation_sans_bold"
   },
   "navball": {
-    "enabled": true,
+    "enabled": false,
     "position_x": 810,
     "position_y": 730,
     "size": 300,
@@ -62,7 +62,7 @@
     }
   },
   "celestial_indicators": {
-    "enabled": true,
+    "enabled": false,
     "show_sun": true,
     "show_moon": true,
     "scale": 1.0,
@@ -73,7 +73,7 @@
     "moon_back_svg": "resources/navball_indicators/moon_back.svg"
   },
   "sharpness_heatmap": {
-    "enabled": true,
+    "enabled": false,
     "position_x": 912,
     "position_y": 878,
     "cell_size": 12,
@@ -96,5 +96,13 @@
     "color_track": "#FF00FFFF",
     "color_zoom": "#FFFF00FF",
     "color_fx": "#FFFFFF00"
+  },
+  "autofocus_debug": {
+    "enabled": true,
+    "position_x": 690,
+    "position_y": 800,
+    "bar_height": 80,
+    "heatmap_cell_size": 12,
+    "chart_width": 180
   }
 }

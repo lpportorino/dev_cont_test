@@ -73,6 +73,11 @@ synthetic_state_create (animation_type_t type,
   gen->state->rotary.elevation_speed = 0.0;
   gen->state->rotary.is_moving = false;
 
+  // Camera day (autofocus debug panel)
+  gen->state->has_camera_day = true;
+  gen->state->camera_day.focus_pos = 0.5;
+  gen->state->camera_day.zoom_pos = 0.3;
+
   // Use fixed timestamp: 2025-01-08 00:00:00 UTC (4:00 PM PST, Jan 7)
   // First Quarter Moon - both sun and moon well above horizon
   // Sun: ~20° altitude (late afternoon), Moon: ~40° altitude (eastern sky)
@@ -220,6 +225,16 @@ synthetic_state_next_frame (synthetic_state_t *gen)
     gen->state->cv.roi_focus_heat = gen->state->cv.roi_focus_day;
     gen->state->cv.has_roi_zoom_heat = true;
     gen->state->cv.roi_zoom_heat = gen->state->cv.roi_zoom_day;
+  }
+
+  // Autofocus debug - animate focus sweeping through range
+  // Focus sweeps 0.0 -> 1.0 -> 0.0 over duration (simulates autofocus search)
+  // Zoom stays relatively stable with small drift
+  {
+    float focus_sweep = sinf (gen->phase * M_PI);       // 0 -> 1 -> 0
+    float zoom_drift  = 0.3f + 0.1f * sinf (gen->phase * 0.5f * M_PI);
+    gen->state->camera_day.focus_pos = focus_sweep;
+    gen->state->camera_day.zoom_pos  = zoom_drift;
   }
 
   // Update timestamp - advance 1 second per frame for visible ticking

@@ -301,6 +301,52 @@
           "description": "Minimum confidence threshold for displaying detections"
         }
       }
+    },
+    "autofocus_debug": {
+      "type": "object",
+      "title": "Autofocus Debug",
+      "x-ui-level": "top",
+      "x-ui-order": 90,
+      "x-ui-collapsed": true,
+      "required": ["enabled", "position_x", "position_y", "bar_height", "heatmap_cell_size", "chart_width"],
+      "properties": {
+        "enabled": { "type": "boolean", "title": "Enabled" },
+        "position_x": {
+          "type": "integer",
+          "title": "Position X",
+          "minimum": 0,
+          "maximum": 3840,
+          "description": "Panel left edge X position"
+        },
+        "position_y": {
+          "type": "integer",
+          "title": "Position Y",
+          "minimum": 0,
+          "maximum": 2160,
+          "description": "Panel top edge Y position"
+        },
+        "bar_height": {
+          "type": "integer",
+          "title": "Bar Height",
+          "minimum": 30,
+          "maximum": 200,
+          "description": "Height of focus/zoom position bars in pixels"
+        },
+        "heatmap_cell_size": {
+          "type": "integer",
+          "title": "Heatmap Cell Size",
+          "minimum": 4,
+          "maximum": 24,
+          "description": "Pixels per cell in 8x8 sharpness heatmap"
+        },
+        "chart_width": {
+          "type": "integer",
+          "title": "Chart Width",
+          "minimum": 80,
+          "maximum": 400,
+          "description": "Width of scatter and history charts in pixels"
+        }
+      }
     }
   },
   "definitions": {

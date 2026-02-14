@@ -501,6 +501,27 @@ parse_roi_config(cJSON *root, roi_config_t *config)
   config->color_fx        = get_color(roi, "color_fx", 0xFFFFFF00);
 }
 
+/**
+ * Parse autofocus debug panel configuration
+ */
+static void
+parse_autofocus_debug_config(cJSON *root, autofocus_debug_config_t *config)
+{
+  cJSON *af_debug = cJSON_GetObjectItem(root, "autofocus_debug");
+  if (!af_debug)
+    {
+      config->enabled = false;
+      return;
+    }
+
+  config->enabled           = get_bool(af_debug, "enabled", false);
+  config->pos_x             = get_int(af_debug, "position_x", 690);
+  config->pos_y             = get_int(af_debug, "position_y", 800);
+  config->bar_height        = get_int(af_debug, "bar_height", 80);
+  config->heatmap_cell_size = get_int(af_debug, "heatmap_cell_size", 12);
+  config->chart_width       = get_int(af_debug, "chart_width", 180);
+}
+
 // ════════════════════════════════════════════════════════════
 // JSON PARSING IMPLEMENTATION
 // ════════════════════════════════════════════════════════════
@@ -532,6 +553,7 @@ config_parse_json(osd_config_t *config, const char *json_path)
   parse_sharpness_heatmap_config(root, &config->sharpness_heatmap);
   parse_detections_config(root, &config->detections);
   parse_roi_config(root, &config->roi);
+  parse_autofocus_debug_config(root, &config->autofocus_debug);
 
   // Clean up
   cJSON_Delete(root);

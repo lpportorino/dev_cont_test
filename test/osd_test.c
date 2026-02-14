@@ -298,6 +298,11 @@ build_synthetic_state (const char *variant_name, size_t *out_size)
   state.rotary.elevation_speed = 0.0;
   state.rotary.is_moving = false;
 
+  // Camera day (autofocus debug panel)
+  state.has_camera_day = true;
+  state.camera_day.focus_pos = 0.72;  // 72% focus position
+  state.camera_day.zoom_pos = 0.45;   // 45% zoom position
+
   state.has_time = true;
   state.time.timestamp = 1736294400; // 2025-01-08 00:00:00 UTC
 

@@ -25,6 +25,7 @@
 #include "resources/svg.h"
 
 // Widgets
+#include "widgets/autofocus_debug.h"
 #include "widgets/crosshair.h"
 #include "widgets/detections.h"
 #include "widgets/navball.h"
@@ -807,6 +808,7 @@ render_widgets(ser_JonGUIState *proto_state)
 
   // CV widgets (render with or without proto, data comes from opaque payloads)
   changed |= sharpness_heatmap_render(&g_osd_ctx, proto_state);
+  changed |= autofocus_debug_render(&g_osd_ctx, proto_state);
   changed |= detections_render(&g_osd_ctx, proto_state);
 
   // ROI overlays (data from proto state CV fields)

@@ -73,12 +73,20 @@
     "moon_back_svg": "resources/navball_indicators/moon_back.svg"
   },
   "sharpness_heatmap": {
-    "enabled": true,
+    "enabled": false,
     "position_x": 912,
     "position_y": 878,
     "cell_size": 12,
     "show_label": true,
     "label_font_size": 16
+  },
+  "autofocus_debug": {
+    "enabled": true,
+    "position_x": 736,
+    "position_y": 850,
+    "bar_height": 96,
+    "heatmap_cell_size": 12,
+    "chart_width": 288
   },
   "detections": {
     "enabled": true,

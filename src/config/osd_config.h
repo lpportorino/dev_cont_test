@@ -174,6 +174,17 @@ typedef struct
   uint32_t color_fx;
 } roi_config_t;
 
+// Autofocus debug panel configuration
+typedef struct
+{
+  bool enabled;
+  int pos_x;             // Panel left edge X
+  int pos_y;             // Panel top edge Y
+  int bar_height;        // Position bar height (default 80)
+  int heatmap_cell_size; // Heatmap cell size in pixels (default 12)
+  int chart_width;       // Chart width in pixels (default 180)
+} autofocus_debug_config_t;
+
 // Full OSD configuration
 typedef struct
 {
@@ -186,6 +197,7 @@ typedef struct
   sharpness_heatmap_config_t sharpness_heatmap;
   detections_config_t detections;
   roi_config_t roi;
+  autofocus_debug_config_t autofocus_debug;
 } osd_config_t;
 
 #endif // OSD_CONFIG_H
