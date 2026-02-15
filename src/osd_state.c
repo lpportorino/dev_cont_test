@@ -413,3 +413,54 @@ osd_state_get_client_metadata(const osd_context_t *ctx,
 
   return true;
 }
+
+// ════════════════════════════════════════════════════════════
+// SAM TRACKING DATA
+// ════════════════════════════════════════════════════════════
+
+bool
+osd_state_get_sam_tracking(const osd_context_t *ctx,
+                           osd_sam_tracking_data_t *out)
+{
+  if (!out || !ctx)
+    return false;
+
+  out->valid            = false;
+  out->status           = 0;
+  out->state            = 0;
+  out->bbox_x1          = 0.0f;
+  out->bbox_y1          = 0.0f;
+  out->bbox_x2          = 0.0f;
+  out->bbox_y2          = 0.0f;
+  out->centroid_x       = 0.0f;
+  out->centroid_y       = 0.0f;
+  out->confidence       = 0.0f;
+  out->mask_width       = 0;
+  out->mask_height      = 0;
+  out->mask_pixels      = 0;
+  out->kf_predicted_x   = 0.0f;
+  out->kf_predicted_y   = 0.0f;
+  out->lost_frame_count = 0;
+
+  if (!ctx->sam_tracking.valid)
+    return false;
+
+  out->status           = ctx->sam_tracking.status;
+  out->state            = ctx->sam_tracking.state;
+  out->bbox_x1          = ctx->sam_tracking.bbox_x1;
+  out->bbox_y1          = ctx->sam_tracking.bbox_y1;
+  out->bbox_x2          = ctx->sam_tracking.bbox_x2;
+  out->bbox_y2          = ctx->sam_tracking.bbox_y2;
+  out->centroid_x       = ctx->sam_tracking.centroid_x;
+  out->centroid_y       = ctx->sam_tracking.centroid_y;
+  out->confidence       = ctx->sam_tracking.confidence;
+  out->mask_width       = ctx->sam_tracking.mask_width;
+  out->mask_height      = ctx->sam_tracking.mask_height;
+  out->mask_pixels      = ctx->sam_tracking.mask_pixels;
+  out->kf_predicted_x   = ctx->sam_tracking.kf_predicted_x;
+  out->kf_predicted_y   = ctx->sam_tracking.kf_predicted_y;
+  out->lost_frame_count = ctx->sam_tracking.lost_frame_count;
+
+  out->valid = true;
+  return true;
+}

@@ -24,5 +24,8 @@
   },
   "roi": {
     "enabled": false
+  },
+  "sam_mask": {
+    "enabled": false
   }
 }

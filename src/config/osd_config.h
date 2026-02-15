@@ -185,6 +185,17 @@ typedef struct
   int chart_width;       // Chart width in pixels (default 180)
 } autofocus_debug_config_t;
 
+// SAM tracking overlay configuration
+typedef struct
+{
+  bool enabled;
+  uint32_t color;       // Default box/centroid color (internal ARGB)
+  float box_thickness;  // Bounding box outline px
+  bool per_state_color; // Use state-based colors (tracking/occluded/lost)
+  int label_font_size;
+  int centroid_radius; // Centroid marker size in px
+} sam_mask_config_t;
+
 // Full OSD configuration
 typedef struct
 {
@@ -198,6 +209,7 @@ typedef struct
   detections_config_t detections;
   roi_config_t roi;
   autofocus_debug_config_t autofocus_debug;
+  sam_mask_config_t sam_mask;
 } osd_config_t;
 
 #endif // OSD_CONFIG_H

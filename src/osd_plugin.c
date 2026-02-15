@@ -30,6 +30,7 @@
 #include "widgets/detections.h"
 #include "widgets/navball.h"
 #include "widgets/roi.h"
+#include "widgets/sam_mask.h"
 #include "widgets/sharpness_heatmap.h"
 #include "widgets/timestamp.h"
 #include "widgets/variant_info.h"
@@ -73,6 +74,9 @@
 #include "opaque/object_detections_day.pb.h"
 #include "opaque/object_detections_heat.pb.h"
 #include "opaque/osd_client_metadata.pb.h"
+#include "opaque/sam_tracking_common.pb.h"
+#include "opaque/sam_tracking_day.pb.h"
+#include "opaque/sam_tracking_heat.pb.h"
 
 // UUID for OsdClientMetadata opaque payload
 #define OSD_CLIENT_METADATA_UUID "01941b00-0000-7000-8000-000000000001"
@@ -81,12 +85,16 @@
 // UUID for ObjectDetections (YOLO results)
 #define OBJECT_DETECTIONS_DAY_UUID "019c40f6-825c-7f4c-8284-ddad4375ed9b"
 #define OBJECT_DETECTIONS_HEAT_UUID "019c40f6-825d-7e0e-9893-87c7b167a751"
+// UUID for SamTracking (SAM visual tracking results)
+#define SAM_TRACKING_DAY_UUID "019f4a7c-8b2d-7a1e-9c3f-2e8d5f1a4b6e"
+#define SAM_TRACKING_HEAT_UUID "019f4a7c-8b2e-7f3c-a1d2-4e9b7c5f8a3d"
 
 // Opaque payload type IDs for dispatch
 #define OPAQUE_TYPE_NONE 0
 #define OPAQUE_TYPE_CLIENT_META 1
 #define OPAQUE_TYPE_CV_META 2
 #define OPAQUE_TYPE_DETECTIONS 3
+#define OPAQUE_TYPE_SAM_TRACKING 4
 
 // Mini XML parser (will include if available)
 // #include <mxml.h>
@@ -196,6 +204,20 @@ opaque_uuid_decode_callback(pb_istream_t *stream,
     {
       cb_ctx->uuid_matched = true;
       cb_ctx->matched_type = OPAQUE_TYPE_DETECTIONS;
+    }
+#endif
+#ifdef OSD_STREAM_DAY
+  else if (strcmp(cb_ctx->uuid_buffer, SAM_TRACKING_DAY_UUID) == 0)
+    {
+      cb_ctx->uuid_matched = true;
+      cb_ctx->matched_type = OPAQUE_TYPE_SAM_TRACKING;
+    }
+#endif
+#ifdef OSD_STREAM_THERMAL
+  else if (strcmp(cb_ctx->uuid_buffer, SAM_TRACKING_HEAT_UUID) == 0)
+    {
+      cb_ctx->uuid_matched = true;
+      cb_ctx->matched_type = OPAQUE_TYPE_SAM_TRACKING;
     }
 #endif
 
@@ -544,6 +566,93 @@ opaque_payloads_decode_callback(pb_istream_t *stream,
         }
 #endif
     }
+  else if (cb_ctx.matched_type == OPAQUE_TYPE_SAM_TRACKING)
+    {
+      // Rate-limited SAM tracking debug logging
+      static int sam_log_counter = 0;
+      bool sam_should_log        = (sam_log_counter++ % 150 == 0);
+
+#ifdef OSD_STREAM_DAY
+      ser_SamTrackingDay sam_msg = ser_SamTrackingDay_init_zero;
+
+      if (pb_decode(&payload_stream, ser_SamTrackingDay_fields, &sam_msg))
+        {
+          ctx->sam_tracking.status      = (int)sam_msg.status;
+          ctx->sam_tracking.state       = (int)sam_msg.state;
+          ctx->sam_tracking.bbox_x1     = (float)sam_msg.bbox_x1;
+          ctx->sam_tracking.bbox_y1     = (float)sam_msg.bbox_y1;
+          ctx->sam_tracking.bbox_x2     = (float)sam_msg.bbox_x2;
+          ctx->sam_tracking.bbox_y2     = (float)sam_msg.bbox_y2;
+          ctx->sam_tracking.centroid_x  = (float)sam_msg.centroid_x;
+          ctx->sam_tracking.centroid_y  = (float)sam_msg.centroid_y;
+          ctx->sam_tracking.confidence  = sam_msg.confidence;
+          ctx->sam_tracking.mask_width  = sam_msg.mask_width;
+          ctx->sam_tracking.mask_height = sam_msg.mask_height;
+          ctx->sam_tracking.mask_pixels = sam_msg.mask_pixels;
+          ctx->sam_tracking.kf_predicted_x
+            = sam_msg.has_kalman ? (float)sam_msg.kalman.predicted_x : 0.0f;
+          ctx->sam_tracking.kf_predicted_y
+            = sam_msg.has_kalman ? (float)sam_msg.kalman.predicted_y : 0.0f;
+          ctx->sam_tracking.lost_frame_count = sam_msg.lost_frame_count;
+          ctx->sam_tracking.valid            = true;
+          // Note: mask_rle decoding deferred to widget (if needed)
+
+          if (sam_should_log)
+            {
+              LOG_WARN("[sam-debug] DAY: status=%d state=%d conf=%.2f "
+                       "box=(%.3f,%.3f)-(%.3f,%.3f)",
+                       ctx->sam_tracking.status, ctx->sam_tracking.state,
+                       ctx->sam_tracking.confidence, ctx->sam_tracking.bbox_x1,
+                       ctx->sam_tracking.bbox_y1, ctx->sam_tracking.bbox_x2,
+                       ctx->sam_tracking.bbox_y2);
+            }
+        }
+      else
+        {
+          LOG_WARN("Failed to decode SamTrackingDay payload");
+        }
+#endif
+
+#ifdef OSD_STREAM_THERMAL
+      ser_SamTrackingHeat sam_msg = ser_SamTrackingHeat_init_zero;
+
+      if (pb_decode(&payload_stream, ser_SamTrackingHeat_fields, &sam_msg))
+        {
+          ctx->sam_tracking.status      = (int)sam_msg.status;
+          ctx->sam_tracking.state       = (int)sam_msg.state;
+          ctx->sam_tracking.bbox_x1     = (float)sam_msg.bbox_x1;
+          ctx->sam_tracking.bbox_y1     = (float)sam_msg.bbox_y1;
+          ctx->sam_tracking.bbox_x2     = (float)sam_msg.bbox_x2;
+          ctx->sam_tracking.bbox_y2     = (float)sam_msg.bbox_y2;
+          ctx->sam_tracking.centroid_x  = (float)sam_msg.centroid_x;
+          ctx->sam_tracking.centroid_y  = (float)sam_msg.centroid_y;
+          ctx->sam_tracking.confidence  = sam_msg.confidence;
+          ctx->sam_tracking.mask_width  = sam_msg.mask_width;
+          ctx->sam_tracking.mask_height = sam_msg.mask_height;
+          ctx->sam_tracking.mask_pixels = sam_msg.mask_pixels;
+          ctx->sam_tracking.kf_predicted_x
+            = sam_msg.has_kalman ? (float)sam_msg.kalman.predicted_x : 0.0f;
+          ctx->sam_tracking.kf_predicted_y
+            = sam_msg.has_kalman ? (float)sam_msg.kalman.predicted_y : 0.0f;
+          ctx->sam_tracking.lost_frame_count = sam_msg.lost_frame_count;
+          ctx->sam_tracking.valid            = true;
+
+          if (sam_should_log)
+            {
+              LOG_WARN("[sam-debug] HEAT: status=%d state=%d conf=%.2f "
+                       "box=(%.3f,%.3f)-(%.3f,%.3f)",
+                       ctx->sam_tracking.status, ctx->sam_tracking.state,
+                       ctx->sam_tracking.confidence, ctx->sam_tracking.bbox_x1,
+                       ctx->sam_tracking.bbox_y1, ctx->sam_tracking.bbox_x2,
+                       ctx->sam_tracking.bbox_y2);
+            }
+        }
+      else
+        {
+          LOG_WARN("Failed to decode SamTrackingHeat payload");
+        }
+#endif
+    }
 
   return true;
 }
@@ -563,6 +672,7 @@ decode_proto_state(osd_context_t *ctx, ser_JonGUIState *pb_state)
   // Reset per-frame CV data (will be repopulated if payloads are present)
   ctx->cv_meta.sharpness_valid = false;
   ctx->detections.valid        = false;
+  ctx->sam_tracking.valid      = false;
 
   // Wire up callback for opaque_payloads to extract opaque payloads
   pb_state->opaque_payloads.funcs.decode = opaque_payloads_decode_callback;
@@ -810,6 +920,7 @@ render_widgets(ser_JonGUIState *proto_state)
   changed |= sharpness_heatmap_render(&g_osd_ctx, proto_state);
   changed |= autofocus_debug_render(&g_osd_ctx, proto_state);
   changed |= detections_render(&g_osd_ctx, proto_state);
+  changed |= sam_mask_render(&g_osd_ctx, proto_state);
 
   // ROI overlays (data from proto state CV fields)
   if (proto_state)

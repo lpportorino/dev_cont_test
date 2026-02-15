@@ -522,6 +522,27 @@ parse_autofocus_debug_config(cJSON *root, autofocus_debug_config_t *config)
   config->chart_width       = get_int(af_debug, "chart_width", 180);
 }
 
+/**
+ * Parse SAM tracking overlay configuration
+ */
+static void
+parse_sam_mask_config(cJSON *root, sam_mask_config_t *config)
+{
+  cJSON *sam_mask = cJSON_GetObjectItem(root, "sam_mask");
+  if (!sam_mask)
+    {
+      config->enabled = false;
+      return;
+    }
+
+  config->enabled         = get_bool(sam_mask, "enabled", true);
+  config->color           = get_color(sam_mask, "color", 0xFF00FF00);
+  config->box_thickness   = (float)get_double(sam_mask, "box_thickness", 2.0);
+  config->per_state_color = get_bool(sam_mask, "per_state_color", true);
+  config->label_font_size = get_int(sam_mask, "label_font_size", 14);
+  config->centroid_radius = get_int(sam_mask, "centroid_radius", 8);
+}
+
 // ════════════════════════════════════════════════════════════
 // JSON PARSING IMPLEMENTATION
 // ════════════════════════════════════════════════════════════
@@ -554,6 +575,7 @@ config_parse_json(osd_config_t *config, const char *json_path)
   parse_detections_config(root, &config->detections);
   parse_roi_config(root, &config->roi);
   parse_autofocus_debug_config(root, &config->autofocus_debug);
+  parse_sam_mask_config(root, &config->sam_mask);
 
   // Clean up
   cJSON_Delete(root);

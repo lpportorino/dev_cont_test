@@ -96,5 +96,13 @@
     "color_track": "#FF00FFFF",
     "color_zoom": "#FFFF00FF",
     "color_fx": "#FFFFFF00"
+  },
+  "sam_mask": {
+    "enabled": true,
+    "color": "#FF00FF00",
+    "box_thickness": 2.0,
+    "per_state_color": true,
+    "label_font_size": 12,
+    "centroid_radius": 6
   }
 }

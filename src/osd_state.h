@@ -192,6 +192,48 @@ bool osd_state_get_rois(const osd_state_t *state,
                         osd_roi_data_t *out);
 
 // ════════════════════════════════════════════════════════════
+// SAM TRACKING DATA (from SamTracking opaque payload)
+// ════════════════════════════════════════════════════════════
+
+// SAM tracking state enum values (mirrors ser_SamTrackingState)
+#define OSD_SAM_STATE_IDLE 1
+#define OSD_SAM_STATE_STARTING 2
+#define OSD_SAM_STATE_TRACKING 3
+#define OSD_SAM_STATE_OCCLUDED 4
+#define OSD_SAM_STATE_LOST 5
+
+// SAM tracking status enum values (mirrors ser_SamTrackingStatus)
+#define OSD_SAM_STATUS_OK 1
+#define OSD_SAM_STATUS_NOT_READY 2
+#define OSD_SAM_STATUS_NOT_STARTED 3
+#define OSD_SAM_STATUS_IPC_TIMEOUT 4
+#define OSD_SAM_STATUS_INFER_FAILED 5
+#define OSD_SAM_STATUS_LOST 6
+
+typedef struct
+{
+  int status;             // OSD_SAM_STATUS_* value
+  int state;              // OSD_SAM_STATE_* value
+  float bbox_x1, bbox_y1; // Bounding box in NDC [-1.0, 1.0]
+  float bbox_x2, bbox_y2;
+  float centroid_x, centroid_y; // Centroid in NDC
+  float confidence;             // [0.0, 1.0]
+  uint32_t mask_width;          // Mask dimensions (if decoded)
+  uint32_t mask_height;
+  uint32_t mask_pixels; // Non-zero pixel count
+  float kf_predicted_x; // Kalman prediction
+  float kf_predicted_y;
+  uint32_t lost_frame_count;
+  bool valid;
+} osd_sam_tracking_data_t;
+
+// Get SAM tracking data from opaque payload
+// Returns true if tracking data is valid
+// Note: Reads from context (populated during opaque payload decode)
+bool osd_state_get_sam_tracking(const osd_context_t *ctx,
+                                osd_sam_tracking_data_t *out);
+
+// ════════════════════════════════════════════════════════════
 // CAMERA DAY DATA (for debug overlay, day variants only)
 // ════════════════════════════════════════════════════════════
 

@@ -347,6 +347,38 @@
           "description": "Width of scatter and history charts in pixels"
         }
       }
+    },
+    "sam_mask": {
+      "type": "object",
+      "title": "SAM Tracking Overlay",
+      "x-ui-level": "top",
+      "x-ui-order": 95,
+      "x-ui-collapsed": true,
+      "required": ["enabled", "color", "box_thickness", "per_state_color", "label_font_size", "centroid_radius"],
+      "properties": {
+        "enabled": { "type": "boolean", "title": "Enabled" },
+        "color": { "$ref": "#/definitions/argb_color", "title": "Default Color" },
+        "box_thickness": {
+          "type": "number",
+          "title": "Box Thickness",
+          "minimum": 0.5,
+          "maximum": 10.0,
+          "description": "Bounding box outline thickness in pixels"
+        },
+        "per_state_color": {
+          "type": "boolean",
+          "title": "Per-State Colors",
+          "description": "Use state-based colors (tracking=green, occluded=yellow, lost=red)"
+        },
+        "label_font_size": { "type": "integer", "title": "Label Font Size", "minimum": 8, "maximum": 48 },
+        "centroid_radius": {
+          "type": "integer",
+          "title": "Centroid Radius",
+          "minimum": 2,
+          "maximum": 20,
+          "description": "Size of centroid crosshair marker in pixels"
+        }
+      }
     }
   },
   "definitions": {

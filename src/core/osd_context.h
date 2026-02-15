@@ -112,6 +112,27 @@ typedef struct osd_context
     bool valid;
   } detections;
 
+  // SAM tracking (from SamTrackingDay/Heat opaque payload)
+  struct
+  {
+    int status;             // ser_SamTrackingStatus enum
+    int state;              // ser_SamTrackingState enum
+    float bbox_x1, bbox_y1; // Bounding box in NDC [-1.0, 1.0]
+    float bbox_x2, bbox_y2;
+    float centroid_x, centroid_y; // Centroid in NDC [-1.0, 1.0]
+    float confidence;             // Tracking confidence [0.0, 1.0]
+    // RLE mask data (decoded)
+    uint8_t *mask_data;  // Decoded binary mask (NULL if not decoded)
+    uint32_t mask_width; // Mask dimensions
+    uint32_t mask_height;
+    uint32_t mask_pixels; // Non-zero pixel count
+    // Kalman prediction
+    float kf_predicted_x;
+    float kf_predicted_y;
+    uint32_t lost_frame_count;
+    bool valid;
+  } sam_tracking;
+
   // Nav ball state
   bool navball_enabled;
   int navball_x;
