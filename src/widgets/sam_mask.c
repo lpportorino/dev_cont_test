@@ -10,6 +10,7 @@
 #include "widgets/sam_mask.h"
 
 #include "core/framebuffer.h"
+#include "core/osd_context.h"
 #include "osd_state.h"
 #include "rendering/blending.h"
 #include "rendering/primitives.h"
@@ -48,6 +49,116 @@ get_state_color(int state, const sam_mask_config_t *config)
       return SAM_COLOR_LOST;
     default:
       return config->color;
+    }
+}
+
+/**
+ * Decode RLE mask data.
+ * Format: [run_length:u16, value:u8]... (little-endian)
+ *
+ * @param rle_data Raw RLE bytes
+ * @param rle_len Length of RLE data
+ * @param out_data Output buffer (must be width * height bytes)
+ * @param width Mask width
+ * @param height Mask height
+ * @return true on success
+ */
+static bool
+decode_rle_mask(const uint8_t *rle_data,
+                size_t rle_len,
+                uint8_t *out_data,
+                uint32_t width,
+                uint32_t height)
+{
+  size_t total_pixels = (size_t)width * height;
+  size_t pixel_idx    = 0;
+  size_t rle_idx      = 0;
+
+  while (rle_idx + 2 < rle_len && pixel_idx < total_pixels)
+    {
+      // Read run_length (u16 little-endian)
+      uint16_t run_length
+        = (uint16_t)rle_data[rle_idx] | ((uint16_t)rle_data[rle_idx + 1] << 8);
+      rle_idx += 2;
+
+      // Read value (u8)
+      uint8_t value = rle_data[rle_idx++];
+
+      // Write run
+      size_t end = pixel_idx + run_length;
+      if (end > total_pixels)
+        {
+          end = total_pixels;
+        }
+
+      while (pixel_idx < end)
+        {
+          out_data[pixel_idx++] = value;
+        }
+    }
+
+  return pixel_idx == total_pixels;
+}
+
+/**
+ * Render binary mask as semi-transparent overlay.
+ *
+ * The SAM 256x256 mask represents a 512x512 CENTER CROP from the full frame,
+ * NOT the full frame. The crop is centered at ((width-512)/2, (height-512)/2).
+ *
+ * Coordinate transformation:
+ *   mask (256x256) → crop (512x512) → frame (1920x1080)
+ *   Scale: 2x (mask to crop)
+ *   Offset: (704, 284) for 1920x1080
+ *
+ * @param fb        Framebuffer to render to
+ * @param mask      Binary mask data (256x256)
+ * @param mask_w    Mask width
+ * @param mask_h    Mask height
+ * @param color     Mask color (AABBGGRR)
+ * @param alpha     Mask alpha (0-255)
+ */
+static void
+render_mask_overlay(framebuffer_t *fb,
+                    const uint8_t *mask,
+                    uint32_t mask_w,
+                    uint32_t mask_h,
+                    uint32_t color,
+                    uint8_t alpha)
+{
+  // SAM uses 512x512 center crop from input frame
+  const int crop_size = 512;
+  int crop_x          = ((int)fb->width - crop_size) / 2;  // 704 for 1920
+  int crop_y          = ((int)fb->height - crop_size) / 2; // 284 for 1080
+
+  // Scale factor: mask (256) → crop (512) = 2.0
+  float scale = (float)crop_size / (float)mask_w;
+
+  // Blend color with alpha
+  uint32_t blend_color = (color & 0x00FFFFFF) | ((uint32_t)alpha << 24);
+
+  for (uint32_t my = 0; my < mask_h; my++)
+    {
+      for (uint32_t mx = 0; mx < mask_w; mx++)
+        {
+          if (mask[my * mask_w + mx])
+            {
+              // Scale mask coords to crop space, then offset to frame space
+              int sx     = crop_x + (int)((float)mx * scale);
+              int sy     = crop_y + (int)((float)my * scale);
+              int sx_end = crop_x + (int)((float)(mx + 1) * scale);
+              int sy_end = crop_y + (int)((float)(my + 1) * scale);
+
+              // Draw scaled pixel (fill the scaled region)
+              for (int py = sy; py < sy_end; py++)
+                {
+                  for (int px = sx; px < sx_end; px++)
+                    {
+                      framebuffer_blend_pixel(fb, px, py, blend_color);
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -112,6 +223,7 @@ sam_mask_render(osd_context_t *ctx, const osd_state_t *state)
   uint32_t color = get_state_color(data.state, c);
 
   // Convert NDC [-1.0, 1.0] to pixel coordinates
+  // Note: SAM uses image-space NDC where y1=top (smaller Y = top)
   int px1 = (int)((data.bbox_x1 + 1.0f) / 2.0f * w);
   int py1 = (int)((data.bbox_y1 + 1.0f) / 2.0f * h);
   int px2 = (int)((data.bbox_x2 + 1.0f) / 2.0f * w);
@@ -128,7 +240,24 @@ sam_mask_render(osd_context_t *ctx, const osd_state_t *state)
   draw_rect_outline(&fb, px1, py1, bw, bh, color, c->box_thickness);
   rendered = true;
 
-  // Draw centroid marker
+  // Render mask overlay if enabled and data available
+  if (c->mask_enabled && ctx->sam_tracking.mask_rle_len > 0
+      && data.mask_width > 0 && data.mask_height > 0
+      && data.mask_width <= OSD_SAM_MASK_WIDTH
+      && data.mask_height <= OSD_SAM_MASK_HEIGHT)
+    {
+      // Decode RLE into static buffer
+      if (decode_rle_mask(
+            ctx->sam_tracking.mask_rle, ctx->sam_tracking.mask_rle_len,
+            ctx->sam_tracking.mask_data, data.mask_width, data.mask_height))
+        {
+          // Render mask at full frame scale (mask is 256x256 for full frame)
+          render_mask_overlay(&fb, ctx->sam_tracking.mask_data, data.mask_width,
+                              data.mask_height, color, c->mask_alpha);
+        }
+    }
+
+  // Draw centroid marker (image-space NDC: smaller Y = top)
   int cx     = (int)((data.centroid_x + 1.0f) / 2.0f * w);
   int cy     = (int)((data.centroid_y + 1.0f) / 2.0f * h);
   int radius = c->centroid_radius;
@@ -138,6 +267,7 @@ sam_mask_render(osd_context_t *ctx, const osd_state_t *state)
   draw_line(&fb, cx, cy - radius, cx, cy + radius, color, 2.0f);
 
   // Draw Kalman prediction marker (if different from centroid)
+  // Image-space NDC: smaller Y = top
   if (data.kf_predicted_x != 0.0f || data.kf_predicted_y != 0.0f)
     {
       int kx = (int)((data.kf_predicted_x + 1.0f) / 2.0f * w);
