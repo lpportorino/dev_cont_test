@@ -133,6 +133,7 @@ detections_render(osd_context_t *ctx, const osd_state_t *state)
         }
 
       // Convert NDC [-1.0, 1.0] to pixel coordinates
+      // Note: YOLO uses image-space NDC where y1=top (smaller Y = top)
       int px1 = (int)((det->x1 + 1.0f) / 2.0f * w);
       int py1 = (int)((det->y1 + 1.0f) / 2.0f * h);
       int px2 = (int)((det->x2 + 1.0f) / 2.0f * w);

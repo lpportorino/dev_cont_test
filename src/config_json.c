@@ -541,6 +541,8 @@ parse_sam_mask_config(cJSON *root, sam_mask_config_t *config)
   config->per_state_color = get_bool(sam_mask, "per_state_color", true);
   config->label_font_size = get_int(sam_mask, "label_font_size", 14);
   config->centroid_radius = get_int(sam_mask, "centroid_radius", 8);
+  config->mask_enabled    = get_bool(sam_mask, "mask_enabled", true);
+  config->mask_alpha      = (uint8_t)get_int(sam_mask, "mask_alpha", 128);
 }
 
 // ════════════════════════════════════════════════════════════

@@ -19,6 +19,13 @@
 // Maximum number of YOLO detections stored per frame
 #define OSD_MAX_DETECTIONS 64
 
+// SAM mask dimensions (hard-coded in bezoar_sam_track.h:39-40)
+// Single object tracking = single static buffer is sufficient
+#define OSD_SAM_MASK_WIDTH 256
+#define OSD_SAM_MASK_HEIGHT 256
+#define OSD_SAM_MASK_SIZE (OSD_SAM_MASK_WIDTH * OSD_SAM_MASK_HEIGHT)
+#define OSD_SAM_MAX_RLE_SIZE 65536
+
 // ════════════════════════════════════════════════════════════
 // OSD CONTEXT
 // ════════════════════════════════════════════════════════════
@@ -121,9 +128,11 @@ typedef struct osd_context
     float bbox_x2, bbox_y2;
     float centroid_x, centroid_y; // Centroid in NDC [-1.0, 1.0]
     float confidence;             // Tracking confidence [0.0, 1.0]
-    // RLE mask data (decoded)
-    uint8_t *mask_data;  // Decoded binary mask (NULL if not decoded)
-    uint32_t mask_width; // Mask dimensions
+    // Static buffers for mask data (single object tracking)
+    uint8_t mask_rle[OSD_SAM_MAX_RLE_SIZE]; // RLE-encoded bytes from proto
+    size_t mask_rle_len;                    // Actual RLE data length
+    uint8_t mask_data[OSD_SAM_MASK_SIZE];   // Decoded binary mask
+    uint32_t mask_width;                    // Mask dimensions
     uint32_t mask_height;
     uint32_t mask_pixels; // Non-zero pixel count
     // Kalman prediction

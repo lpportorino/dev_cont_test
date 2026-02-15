@@ -377,6 +377,18 @@
           "minimum": 2,
           "maximum": 20,
           "description": "Size of centroid crosshair marker in pixels"
+        },
+        "mask_enabled": {
+          "type": "boolean",
+          "title": "Mask Enabled",
+          "description": "Enable segmentation mask overlay rendering"
+        },
+        "mask_alpha": {
+          "type": "integer",
+          "title": "Mask Alpha",
+          "minimum": 0,
+          "maximum": 255,
+          "description": "Mask overlay transparency (0=invisible, 255=opaque)"
         }
       }
     }

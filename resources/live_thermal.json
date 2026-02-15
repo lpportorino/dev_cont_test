@@ -111,6 +111,8 @@
     "box_thickness": 2.0,
     "per_state_color": true,
     "label_font_size": 12,
-    "centroid_radius": 6
+    "centroid_radius": 6,
+    "mask_enabled": true,
+    "mask_alpha": 128
   }
 }

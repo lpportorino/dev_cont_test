@@ -194,6 +194,8 @@ typedef struct
   bool per_state_color; // Use state-based colors (tracking/occluded/lost)
   int label_font_size;
   int centroid_radius; // Centroid marker size in px
+  bool mask_enabled;   // Enable mask overlay rendering
+  uint8_t mask_alpha;  // Mask transparency (0-255, default 128)
 } sam_mask_config_t;
 
 // Full OSD configuration

@@ -35,6 +35,7 @@ render_single_roi(framebuffer_t *fb,
   float h = (float)ctx->height;
 
   // NDC [-1.0, 1.0] -> pixel coordinates
+  // Note: ROI uses image-space NDC where y1=top (smaller Y = top)
   int px1 = (int)((roi->x1 + 1.0) / 2.0 * w);
   int py1 = (int)((roi->y1 + 1.0) / 2.0 * h);
   int px2 = (int)((roi->x2 + 1.0) / 2.0 * w);

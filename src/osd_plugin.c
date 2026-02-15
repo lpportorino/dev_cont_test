@@ -323,6 +323,36 @@ detections_decode_callback(pb_istream_t *stream,
   return true;
 }
 
+// Callback to capture mask_rle bytes from proto into static buffer
+static bool
+sam_mask_rle_decode_callback(pb_istream_t *stream,
+                             const pb_field_t *field,
+                             void **arg)
+{
+  osd_context_t *ctx = (osd_context_t *)*arg;
+  (void)field;
+
+  size_t len = stream->bytes_left;
+
+  // Reset length (static buffer, no free needed)
+  ctx->sam_tracking.mask_rle_len = 0;
+
+  if (len == 0)
+    {
+      return true; // Empty mask is valid
+    }
+
+  // Clamp to static buffer size
+  if (len > OSD_SAM_MAX_RLE_SIZE)
+    {
+      len = OSD_SAM_MAX_RLE_SIZE;
+    }
+
+  // Copy directly into static buffer
+  ctx->sam_tracking.mask_rle_len = len;
+  return pb_read(stream, ctx->sam_tracking.mask_rle, len);
+}
+
 // Callback for opaque_payloads repeated field in JonGUIState
 static bool
 opaque_payloads_decode_callback(pb_istream_t *stream,
@@ -573,7 +603,9 @@ opaque_payloads_decode_callback(pb_istream_t *stream,
       bool sam_should_log        = (sam_log_counter++ % 150 == 0);
 
 #ifdef OSD_STREAM_DAY
-      ser_SamTrackingDay sam_msg = ser_SamTrackingDay_init_zero;
+      ser_SamTrackingDay sam_msg    = ser_SamTrackingDay_init_zero;
+      sam_msg.mask_rle.funcs.decode = sam_mask_rle_decode_callback;
+      sam_msg.mask_rle.arg          = ctx;
 
       if (pb_decode(&payload_stream, ser_SamTrackingDay_fields, &sam_msg))
         {
@@ -614,7 +646,9 @@ opaque_payloads_decode_callback(pb_istream_t *stream,
 #endif
 
 #ifdef OSD_STREAM_THERMAL
-      ser_SamTrackingHeat sam_msg = ser_SamTrackingHeat_init_zero;
+      ser_SamTrackingHeat sam_msg   = ser_SamTrackingHeat_init_zero;
+      sam_msg.mask_rle.funcs.decode = sam_mask_rle_decode_callback;
+      sam_msg.mask_rle.arg          = ctx;
 
       if (pb_decode(&payload_stream, ser_SamTrackingHeat_fields, &sam_msg))
         {
